@@ -110,3 +110,113 @@ func TestRepeatedPatterns(t *testing.T) {
 		t.Errorf("Expected %v, got %v", expected, matches)
 	}
 }
+
+func TestEmptyPatterns(t *testing.T) {
+	matcher := New()
+	patterns := []string{}
+	matcher.Build(patterns)
+	
+	text := "test"
+	matches := matcher.FindAll(text)
+	
+	if len(matches) != 0 {
+		t.Errorf("Expected no matches for empty patterns, got %v", matches)
+	}
+}
+
+func TestEmptyStringPattern(t *testing.T) {
+	matcher := New()
+	patterns := []string{"", "test"}
+	matcher.Build(patterns)
+	
+	text := "test"
+	matches := matcher.FindAll(text)
+	
+	expected := []Match{
+		{Pattern: "test", Index: 0, Start: 0, End: 4},
+	}
+	
+	if !reflect.DeepEqual(matches, expected) {
+		t.Errorf("Expected %v, got %v", expected, matches)
+	}
+}
+
+func TestDuplicatePatterns(t *testing.T) {
+	matcher := New()
+	patterns := []string{"abc", "abc", "abc"}
+	matcher.Build(patterns)
+	
+	text := "abc"
+	matches := matcher.FindAll(text)
+	
+	expected := []Match{
+		{Pattern: "abc", Index: 0, Start: 0, End: 3},
+		{Pattern: "abc", Index: 1, Start: 0, End: 3},
+		{Pattern: "abc", Index: 2, Start: 0, End: 3},
+	}
+	
+	if !reflect.DeepEqual(matches, expected) {
+		t.Errorf("Expected %v, got %v", expected, matches)
+	}
+}
+
+func TestSingleCharacterPatterns(t *testing.T) {
+	matcher := New()
+	patterns := []string{"a", "b", "c", "d"}
+	matcher.Build(patterns)
+	
+	text := "abcdcba"
+	matches := matcher.FindAll(text)
+	
+	expected := []Match{
+		{Pattern: "a", Index: 0, Start: 0, End: 1},
+		{Pattern: "b", Index: 1, Start: 1, End: 2},
+		{Pattern: "c", Index: 2, Start: 2, End: 3},
+		{Pattern: "d", Index: 3, Start: 3, End: 4},
+		{Pattern: "c", Index: 2, Start: 4, End: 5},
+		{Pattern: "b", Index: 1, Start: 5, End: 6},
+		{Pattern: "a", Index: 0, Start: 6, End: 7},
+	}
+	
+	if !reflect.DeepEqual(matches, expected) {
+		t.Errorf("Expected %v, got %v", expected, matches)
+	}
+}
+
+func TestFindAllBeforeBuild(t *testing.T) {
+	matcher := New()
+	text := "test"
+	matches := matcher.FindAll(text)
+	
+	if len(matches) != 0 {
+		t.Errorf("Expected no matches before Build, got %v", matches)
+	}
+}
+
+func TestRebuild(t *testing.T) {
+	matcher := New()
+	
+	patterns1 := []string{"abc", "def"}
+	matcher.Build(patterns1)
+	
+	text := "abcdef"
+	matches1 := matcher.FindAll(text)
+	
+	expected1 := []Match{
+		{Pattern: "abc", Index: 0, Start: 0, End: 3},
+		{Pattern: "def", Index: 1, Start: 3, End: 6},
+	}
+	
+	if !reflect.DeepEqual(matches1, expected1) {
+		t.Errorf("First build: Expected %v, got %v", expected1, matches1)
+	}
+	
+	patterns2 := []string{"xyz"}
+	matcher.Build(patterns2)
+	
+	matches2 := matcher.FindAll(text)
+	
+	if len(matches2) != 0 {
+		t.Errorf("After rebuild: Expected no matches, got %v", matches2)
+	}
+}

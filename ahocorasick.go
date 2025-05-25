@@ -29,10 +29,17 @@ func New() *Matcher {
 }
 
 func (m *Matcher) Build(patterns []string) {
-	m.patterns = patterns
+	m.root = &Node{
+		children: make(map[rune]*Node),
+		depth:    0,
+	}
+	m.patterns = make([]string, 0)
 	
-	for i, pattern := range patterns {
-		m.addPattern(pattern, i)
+	for _, pattern := range patterns {
+		if len(pattern) > 0 {
+			m.addPattern(pattern, len(m.patterns))
+			m.patterns = append(m.patterns, pattern)
+		}
 	}
 	
 	m.buildFailureFunction()
