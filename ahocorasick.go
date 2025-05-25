@@ -15,8 +15,9 @@ type Node struct {
 }
 
 type Matcher struct {
-	root     *Node
-	patterns []string
+	root        *Node
+	patterns    []string
+	patternLens []int
 }
 
 func New() *Matcher {
@@ -25,7 +26,8 @@ func New() *Matcher {
 			children: make(map[rune]*Node),
 			depth:    0,
 		},
-		patterns: make([]string, 0),
+		patterns:    make([]string, 0),
+		patternLens: make([]int, 0),
 	}
 }
 
@@ -35,11 +37,13 @@ func (m *Matcher) Build(patterns []string) {
 		depth:    0,
 	}
 	m.patterns = make([]string, 0)
+	m.patternLens = make([]int, 0)
 	
 	for _, pattern := range patterns {
 		if len(pattern) > 0 {
 			m.addPattern(pattern, len(m.patterns))
 			m.patterns = append(m.patterns, pattern)
+			m.patternLens = append(m.patternLens, utf8.RuneCountInString(pattern))
 		}
 	}
 	
@@ -130,7 +134,7 @@ func (m *Matcher) FindAll(text string) []Match {
 		if len(node.output) > 0 {
 			for _, patternIndex := range node.output {
 				pattern := m.patterns[patternIndex]
-				patternRuneLen := utf8.RuneCountInString(pattern)
+				patternRuneLen := m.patternLens[patternIndex]
 				matches = append(matches, Match{
 					Pattern: pattern,
 					Index:   patternIndex,
