@@ -116,7 +116,7 @@ type Match struct {
 }
 
 func (m *Matcher) FindAll(text string) []Match {
-	matches := make([]Match, 0)
+	matches := make([]Match, 0, 16)
 	node := m.root
 	
 	pos := 0
