@@ -1,7 +1,6 @@
 package goahocorasick
 
 import (
-	"container/list"
 	"unicode/utf8"
 )
 
@@ -72,20 +71,19 @@ func (m *Matcher) addPattern(pattern string, index int) {
 }
 
 func (m *Matcher) buildFailureFunction() {
-	queue := list.New()
+	queue := make([]*Node, 0, 64)
 	
 	for _, child := range m.root.children {
 		child.fail = m.root
-		queue.PushBack(child)
+		queue = append(queue, child)
 	}
 	
-	for queue.Len() > 0 {
-		element := queue.Front()
-		currentNode := element.Value.(*Node)
-		queue.Remove(element)
+	for len(queue) > 0 {
+		currentNode := queue[0]
+		queue = queue[1:]
 		
 		for ch, child := range currentNode.children {
-			queue.PushBack(child)
+			queue = append(queue, child)
 			
 			failNode := currentNode.fail
 			for failNode != nil && failNode.children[ch] == nil {
