@@ -2,6 +2,7 @@ package goahocorasick
 
 import (
 	"container/list"
+	"unicode/utf8"
 )
 
 type Node struct {
@@ -114,27 +115,33 @@ func (m *Matcher) FindAll(text string) []Match {
 	matches := make([]Match, 0)
 	node := m.root
 	
-	runes := []rune(text)
-	for i, ch := range runes {
-		for node != m.root && node.children[ch] == nil {
+	pos := 0
+	for i := 0; i < len(text); {
+		r, size := utf8.DecodeRuneInString(text[i:])
+		
+		for node != m.root && node.children[r] == nil {
 			node = node.fail
 		}
 		
-		if node.children[ch] != nil {
-			node = node.children[ch]
+		if node.children[r] != nil {
+			node = node.children[r]
 		}
 		
 		if len(node.output) > 0 {
 			for _, patternIndex := range node.output {
 				pattern := m.patterns[patternIndex]
+				patternRuneLen := utf8.RuneCountInString(pattern)
 				matches = append(matches, Match{
 					Pattern: pattern,
 					Index:   patternIndex,
-					Start:   i - len([]rune(pattern)) + 1,
-					End:     i + 1,
+					Start:   pos - patternRuneLen + 1,
+					End:     pos + 1,
 				})
 			}
 		}
+		
+		i += size
+		pos++
 	}
 	
 	return matches
