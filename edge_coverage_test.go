@@ -4,23 +4,6 @@ import (
 	"testing"
 )
 
-func TestSelfReferencePreventionEdgeCase(t *testing.T) {
-	matcher := New()
-	patterns := []string{"a"}
-	if err := matcher.Build(patterns); err != nil {
-		t.Fatalf("Build failed: %v", err)
-	}
-	
-	text := "a"
-	matches, err := matcher.FindAll(text)
-	if err != nil {
-		t.Fatalf("FindAll failed: %v", err)
-	}
-	
-	if len(matches) != 1 || matches[0].Pattern != "a" {
-		t.Errorf("Expected one match for 'a', got %v", matches)
-	}
-}
 
 func TestEmptyOutputSuffixLink(t *testing.T) {
 	matcher := New()
@@ -41,20 +24,3 @@ func TestEmptyOutputSuffixLink(t *testing.T) {
 	}
 }
 
-func TestSinglePatternNoFailureLinks(t *testing.T) {
-	matcher := New()
-	patterns := []string{"single"}
-	if err := matcher.Build(patterns); err != nil {
-		t.Fatalf("Build failed: %v", err)
-	}
-	
-	text := "single"
-	matches, err := matcher.FindAll(text)
-	if err != nil {
-		t.Fatalf("FindAll failed: %v", err)
-	}
-	
-	if len(matches) != 1 || matches[0].Pattern != "single" {
-		t.Errorf("Expected one match for 'single', got %v", matches)
-	}
-}

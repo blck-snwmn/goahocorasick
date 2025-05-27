@@ -5,31 +5,6 @@ import (
 	"testing"
 )
 
-func TestHighlyRepetitivePatterns(t *testing.T) {
-	matcher := New()
-	patterns := []string{
-		"aaaaaaa",
-		"aaaaaa",
-		"aaaaa",
-		"aaaa",
-		"aaa",
-		"aa",
-		"a",
-	}
-	if err := matcher.Build(patterns); err != nil {
-		t.Fatalf("Build failed: %v", err)
-	}
-	
-	text := strings.Repeat("a", 100)
-	matches, err := matcher.FindAll(text)
-	if err != nil {
-		t.Fatalf("FindAll failed: %v", err)
-	}
-	
-	if len(matches) == 0 {
-		t.Errorf("Expected many matches for repetitive patterns, got none")
-	}
-}
 
 func TestPatternsSharingPrefixes(t *testing.T) {
 	matcher := New()

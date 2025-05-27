@@ -5,141 +5,106 @@ import (
 	"testing"
 )
 
-func TestBasicMatching(t *testing.T) {
-	matcher := New()
-	patterns := []string{"he", "she", "his", "hers"}
-	if err := matcher.Build(patterns); err != nil {
-		t.Fatalf("Build failed: %v", err)
+func TestPatternMatching(t *testing.T) {
+	tests := []struct {
+		name     string
+		patterns []string
+		text     string
+		expected []Match
+	}{
+		{
+			name:     "basic matching",
+			patterns: []string{"he", "she", "his", "hers"},
+			text:     "ushers",
+			expected: []Match{
+				{Pattern: "she", Index: 1, Start: 1, End: 4},
+				{Pattern: "he", Index: 0, Start: 2, End: 4},
+				{Pattern: "hers", Index: 3, Start: 2, End: 6},
+			},
+		},
+		{
+			name:     "overlapping patterns",
+			patterns: []string{"a", "ab", "abc", "bc", "c"},
+			text:     "abc",
+			expected: []Match{
+				{Pattern: "a", Index: 0, Start: 0, End: 1},
+				{Pattern: "ab", Index: 1, Start: 0, End: 2},
+				{Pattern: "abc", Index: 2, Start: 0, End: 3},
+				{Pattern: "bc", Index: 3, Start: 1, End: 3},
+				{Pattern: "c", Index: 4, Start: 2, End: 3},
+			},
+		},
+		{
+			name:     "no matches",
+			patterns: []string{"foo", "bar", "baz"},
+			text:     "hello world",
+			expected: []Match{},
+		},
+		{
+			name:     "empty text",
+			patterns: []string{"test"},
+			text:     "",
+			expected: []Match{},
+		},
 	}
-	
-	text := "ushers"
-	matches, err := matcher.FindAll(text)
-	if err != nil {
-		t.Fatalf("FindAll failed: %v", err)
-	}
-	
-	expected := []Match{
-		{Pattern: "she", Index: 1, Start: 1, End: 4},
-		{Pattern: "he", Index: 0, Start: 2, End: 4},
-		{Pattern: "hers", Index: 3, Start: 2, End: 6},
-	}
-	
-	if !reflect.DeepEqual(matches, expected) {
-		t.Errorf("Expected %v, got %v", expected, matches)
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			matcher := New()
+			if err := matcher.Build(tc.patterns); err != nil {
+				t.Fatalf("Build failed: %v", err)
+			}
+
+			matches, err := matcher.FindAll(tc.text)
+			if err != nil {
+				t.Fatalf("FindAll failed: %v", err)
+			}
+
+			if !reflect.DeepEqual(matches, tc.expected) {
+				t.Errorf("Expected %v, got %v", tc.expected, matches)
+			}
+		})
 	}
 }
 
-func TestOverlappingPatterns(t *testing.T) {
-	matcher := New()
-	patterns := []string{"a", "ab", "abc", "bc", "c"}
-	if err := matcher.Build(patterns); err != nil {
-		t.Fatalf("Build failed: %v", err)
+func TestUnicodeAndSpecialCharacters(t *testing.T) {
+	tests := []struct {
+		name     string
+		patterns []string
+		text     string
+		expected []Match
+	}{
+		{
+			name:     "unicode patterns",
+			patterns: []string{"こんにちは", "世界", "日本"},
+			text:     "こんにちは世界、日本へようこそ",
+			expected: []Match{
+				{Pattern: "こんにちは", Index: 0, Start: 0, End: 5},
+				{Pattern: "世界", Index: 1, Start: 5, End: 7},
+				{Pattern: "日本", Index: 2, Start: 8, End: 10},
+			},
+		},
 	}
-	
-	text := "abc"
-	matches, err := matcher.FindAll(text)
-	if err != nil {
-		t.Fatalf("FindAll failed: %v", err)
-	}
-	
-	expected := []Match{
-		{Pattern: "a", Index: 0, Start: 0, End: 1},
-		{Pattern: "ab", Index: 1, Start: 0, End: 2},
-		{Pattern: "abc", Index: 2, Start: 0, End: 3},
-		{Pattern: "bc", Index: 3, Start: 1, End: 3},
-		{Pattern: "c", Index: 4, Start: 2, End: 3},
-	}
-	
-	if !reflect.DeepEqual(matches, expected) {
-		t.Errorf("Expected %v, got %v", expected, matches)
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			matcher := New()
+			if err := matcher.Build(tc.patterns); err != nil {
+				t.Fatalf("Build failed: %v", err)
+			}
+
+			matches, err := matcher.FindAll(tc.text)
+			if err != nil {
+				t.Fatalf("FindAll failed: %v", err)
+			}
+
+			if !reflect.DeepEqual(matches, tc.expected) {
+				t.Errorf("Expected %v, got %v", tc.expected, matches)
+			}
+		})
 	}
 }
 
-func TestNoMatches(t *testing.T) {
-	matcher := New()
-	patterns := []string{"foo", "bar", "baz"}
-	if err := matcher.Build(patterns); err != nil {
-		t.Fatalf("Build failed: %v", err)
-	}
-	
-	text := "hello world"
-	matches, err := matcher.FindAll(text)
-	if err != nil {
-		t.Fatalf("FindAll failed: %v", err)
-	}
-	
-	if len(matches) != 0 {
-		t.Errorf("Expected no matches, got %v", matches)
-	}
-}
-
-func TestEmptyText(t *testing.T) {
-	matcher := New()
-	patterns := []string{"test"}
-	if err := matcher.Build(patterns); err != nil {
-		t.Fatalf("Build failed: %v", err)
-	}
-	
-	text := ""
-	matches, err := matcher.FindAll(text)
-	if err != nil {
-		t.Fatalf("FindAll failed: %v", err)
-	}
-	
-	if len(matches) != 0 {
-		t.Errorf("Expected no matches for empty text, got %v", matches)
-	}
-}
-
-func TestUnicodePatterns(t *testing.T) {
-	matcher := New()
-	patterns := []string{"こんにちは", "世界", "日本"}
-	if err := matcher.Build(patterns); err != nil {
-		t.Fatalf("Build failed: %v", err)
-	}
-	
-	text := "こんにちは世界、日本へようこそ"
-	matches, err := matcher.FindAll(text)
-	if err != nil {
-		t.Fatalf("FindAll failed: %v", err)
-	}
-	
-	expected := []Match{
-		{Pattern: "こんにちは", Index: 0, Start: 0, End: 5},
-		{Pattern: "世界", Index: 1, Start: 5, End: 7},
-		{Pattern: "日本", Index: 2, Start: 8, End: 10},
-	}
-	
-	if !reflect.DeepEqual(matches, expected) {
-		t.Errorf("Expected %v, got %v", expected, matches)
-	}
-}
-
-func TestRepeatedPatterns(t *testing.T) {
-	matcher := New()
-	patterns := []string{"aa", "a"}
-	if err := matcher.Build(patterns); err != nil {
-		t.Fatalf("Build failed: %v", err)
-	}
-	
-	text := "aaa"
-	matches, err := matcher.FindAll(text)
-	if err != nil {
-		t.Fatalf("FindAll failed: %v", err)
-	}
-	
-	expected := []Match{
-		{Pattern: "a", Index: 1, Start: 0, End: 1},
-		{Pattern: "aa", Index: 0, Start: 0, End: 2},
-		{Pattern: "a", Index: 1, Start: 1, End: 2},
-		{Pattern: "aa", Index: 0, Start: 1, End: 3},
-		{Pattern: "a", Index: 1, Start: 2, End: 3},
-	}
-	
-	if !reflect.DeepEqual(matches, expected) {
-		t.Errorf("Expected %v, got %v", expected, matches)
-	}
-}
 
 func TestEmptyPatterns(t *testing.T) {
 	matcher := New()

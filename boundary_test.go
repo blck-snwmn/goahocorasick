@@ -6,89 +6,63 @@ import (
 	"testing"
 )
 
-func TestPatternLongerThanText(t *testing.T) {
-	matcher := New()
-	patterns := []string{"abcdef"}
-	if err := matcher.Build(patterns); err != nil {
-		t.Fatalf("Build failed: %v", err)
+func TestBoundaryConditions(t *testing.T) {
+	tests := []struct {
+		name     string
+		patterns []string
+		text     string
+		expected []Match
+	}{
+		{
+			name:     "pattern longer than text",
+			patterns: []string{"abcdef"},
+			text:     "abc",
+			expected: []Match{},
+		},
+		{
+			name:     "single character text",
+			patterns: []string{"a", "ab", "b"},
+			text:     "a",
+			expected: []Match{
+				{Pattern: "a", Index: 0, Start: 0, End: 1},
+			},
+		},
+		{
+			name:     "pattern equals text",
+			patterns: []string{"exact"},
+			text:     "exact",
+			expected: []Match{
+				{Pattern: "exact", Index: 0, Start: 0, End: 5},
+			},
+		},
+		{
+			name:     "match at text boundaries",
+			patterns: []string{"start", "end", "middle"},
+			text:     "start in the middle at the end",
+			expected: []Match{
+				{Pattern: "start", Index: 0, Start: 0, End: 5},
+				{Pattern: "middle", Index: 2, Start: 13, End: 19},
+				{Pattern: "end", Index: 1, Start: 27, End: 30},
+			},
+		},
 	}
-	
-	text := "abc"
-	matches, err := matcher.FindAll(text)
-	if err != nil {
-		t.Fatalf("FindAll failed: %v", err)
-	}
-	
-	if len(matches) != 0 {
-		t.Errorf("Expected no matches when pattern is longer than text, got %v", matches)
-	}
-}
 
-func TestSingleCharacterText(t *testing.T) {
-	matcher := New()
-	patterns := []string{"a", "ab", "b"}
-	if err := matcher.Build(patterns); err != nil {
-		t.Fatalf("Build failed: %v", err)
-	}
-	
-	text := "a"
-	matches, err := matcher.FindAll(text)
-	if err != nil {
-		t.Fatalf("FindAll failed: %v", err)
-	}
-	
-	expected := []Match{
-		{Pattern: "a", Index: 0, Start: 0, End: 1},
-	}
-	
-	if !reflect.DeepEqual(matches, expected) {
-		t.Errorf("Expected %v, got %v", expected, matches)
-	}
-}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			matcher := New()
+			if err := matcher.Build(tc.patterns); err != nil {
+				t.Fatalf("Build failed: %v", err)
+			}
 
-func TestPatternEqualsText(t *testing.T) {
-	matcher := New()
-	patterns := []string{"exact"}
-	if err := matcher.Build(patterns); err != nil {
-		t.Fatalf("Build failed: %v", err)
-	}
-	
-	text := "exact"
-	matches, err := matcher.FindAll(text)
-	if err != nil {
-		t.Fatalf("FindAll failed: %v", err)
-	}
-	
-	expected := []Match{
-		{Pattern: "exact", Index: 0, Start: 0, End: 5},
-	}
-	
-	if !reflect.DeepEqual(matches, expected) {
-		t.Errorf("Expected %v, got %v", expected, matches)
-	}
-}
+			matches, err := matcher.FindAll(tc.text)
+			if err != nil {
+				t.Fatalf("FindAll failed: %v", err)
+			}
 
-func TestMatchAtTextBoundaries(t *testing.T) {
-	matcher := New()
-	patterns := []string{"start", "end", "middle"}
-	if err := matcher.Build(patterns); err != nil {
-		t.Fatalf("Build failed: %v", err)
-	}
-	
-	text := "start in the middle at the end"
-	matches, err := matcher.FindAll(text)
-	if err != nil {
-		t.Fatalf("FindAll failed: %v", err)
-	}
-	
-	expected := []Match{
-		{Pattern: "start", Index: 0, Start: 0, End: 5},
-		{Pattern: "middle", Index: 2, Start: 13, End: 19},
-		{Pattern: "end", Index: 1, Start: 27, End: 30},
-	}
-	
-	if !reflect.DeepEqual(matches, expected) {
-		t.Errorf("Expected %v, got %v", expected, matches)
+			if !reflect.DeepEqual(matches, tc.expected) {
+				t.Errorf("Expected %v, got %v", tc.expected, matches)
+			}
+		})
 	}
 }
 
