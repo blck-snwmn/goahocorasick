@@ -6,9 +6,11 @@ import (
 )
 
 func BenchmarkSmallPatterns(b *testing.B) {
-	matcher := New()
+	builder := NewBuilder()
 	patterns := []string{"he", "she", "his", "hers"}
-	if err := matcher.Build(patterns); err != nil {
+	builder.AddPatterns(patterns)
+	matcher, err := builder.Build()
+	if err != nil {
 		b.Fatalf("Build failed: %v", err)
 	}
 	
@@ -21,12 +23,14 @@ func BenchmarkSmallPatterns(b *testing.B) {
 }
 
 func BenchmarkManyPatterns(b *testing.B) {
-	matcher := New()
+	builder := NewBuilder()
 	patterns := make([]string, 100)
 	for i := 0; i < 100; i++ {
 		patterns[i] = string(rune('a' + i%26)) + string(rune('a' + (i+1)%26))
 	}
-	if err := matcher.Build(patterns); err != nil {
+	builder.AddPatterns(patterns)
+	matcher, err := builder.Build()
+	if err != nil {
 		b.Fatalf("Build failed: %v", err)
 	}
 	
@@ -39,9 +43,11 @@ func BenchmarkManyPatterns(b *testing.B) {
 }
 
 func BenchmarkLongText(b *testing.B) {
-	matcher := New()
+	builder := NewBuilder()
 	patterns := []string{"pattern", "test", "benchmark", "performance"}
-	if err := matcher.Build(patterns); err != nil {
+	builder.AddPatterns(patterns)
+	matcher, err := builder.Build()
+	if err != nil {
 		b.Fatalf("Build failed: %v", err)
 	}
 	
@@ -54,9 +60,11 @@ func BenchmarkLongText(b *testing.B) {
 }
 
 func BenchmarkUnicodePatterns(b *testing.B) {
-	matcher := New()
+	builder := NewBuilder()
 	patterns := []string{"こんにちは", "世界", "日本", "東京", "大阪"}
-	if err := matcher.Build(patterns); err != nil {
+	builder.AddPatterns(patterns)
+	matcher, err := builder.Build()
+	if err != nil {
 		b.Fatalf("Build failed: %v", err)
 	}
 	
@@ -76,7 +84,11 @@ func BenchmarkBuildTime(b *testing.B) {
 	
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		matcher := New()
-		_ = matcher.Build(patterns)
+		builder := NewBuilder()
+		builder.AddPatterns(patterns)
+		_, err := builder.Build()
+		if err != nil {
+			b.Fatalf("Build failed: %v", err)
+		}
 	}
 }

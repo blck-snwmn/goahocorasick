@@ -49,8 +49,10 @@ func BenchmarkComparison5Patterns(b *testing.B) {
 	text := generateText(100)
 	
 	b.Run("AhoCorasick", func(b *testing.B) {
-		matcher := New()
-		if err := matcher.Build(patterns); err != nil {
+		builder := NewBuilder()
+		builder.AddPatterns(patterns)
+		matcher, err := builder.Build()
+		if err != nil {
 			b.Fatalf("Build failed: %v", err)
 		}
 		b.ReportAllocs()
@@ -100,8 +102,10 @@ func BenchmarkComparison20Patterns(b *testing.B) {
 	text := generateText(100)
 	
 	b.Run("AhoCorasick", func(b *testing.B) {
-		matcher := New()
-		if err := matcher.Build(patterns); err != nil {
+		builder := NewBuilder()
+		builder.AddPatterns(patterns)
+		matcher, err := builder.Build()
+		if err != nil {
 			b.Fatalf("Build failed: %v", err)
 		}
 		b.ReportAllocs()
@@ -151,8 +155,10 @@ func BenchmarkComparison100Patterns(b *testing.B) {
 	text := generateText(100)
 	
 	b.Run("AhoCorasick", func(b *testing.B) {
-		matcher := New()
-		if err := matcher.Build(patterns); err != nil {
+		builder := NewBuilder()
+		builder.AddPatterns(patterns)
+		matcher, err := builder.Build()
+		if err != nil {
 			b.Fatalf("Build failed: %v", err)
 		}
 		b.ReportAllocs()
@@ -204,8 +210,10 @@ func BenchmarkComparisonShortText(b *testing.B) {
 	text := generateText(10)
 	
 	b.Run("AhoCorasick", func(b *testing.B) {
-		matcher := New()
-		if err := matcher.Build(patterns); err != nil {
+		builder := NewBuilder()
+		builder.AddPatterns(patterns)
+		matcher, err := builder.Build()
+		if err != nil {
 			b.Fatalf("Build failed: %v", err)
 		}
 		b.ReportAllocs()
@@ -255,8 +263,10 @@ func BenchmarkComparisonLongText(b *testing.B) {
 	text := generateText(1000)
 	
 	b.Run("AhoCorasick", func(b *testing.B) {
-		matcher := New()
-		if err := matcher.Build(patterns); err != nil {
+		builder := NewBuilder()
+		builder.AddPatterns(patterns)
+		matcher, err := builder.Build()
+		if err != nil {
 			b.Fatalf("Build failed: %v", err)
 		}
 		b.ReportAllocs()
@@ -306,8 +316,10 @@ func BenchmarkComparisonVeryLongText(b *testing.B) {
 	text := generateText(10000)
 	
 	b.Run("AhoCorasick", func(b *testing.B) {
-		matcher := New()
-		if err := matcher.Build(patterns); err != nil {
+		builder := NewBuilder()
+		builder.AddPatterns(patterns)
+		matcher, err := builder.Build()
+		if err != nil {
 			b.Fatalf("Build failed: %v", err)
 		}
 		b.ReportAllocs()
@@ -361,8 +373,10 @@ func BenchmarkComparisonRealWorldPatterns(b *testing.B) {
 	text := strings.Repeat("2023-01-01 10:00:00 [ERROR] Failed to connect to server: connection timeout. Request failed with exception. ", 100)
 	
 	b.Run("AhoCorasick", func(b *testing.B) {
-		matcher := New()
-		if err := matcher.Build(patterns); err != nil {
+		builder := NewBuilder()
+		builder.AddPatterns(patterns)
+		matcher, err := builder.Build()
+		if err != nil {
 			b.Fatalf("Build failed: %v", err)
 		}
 		b.ReportAllocs()

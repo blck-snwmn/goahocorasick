@@ -7,7 +7,7 @@ import (
 
 
 func TestPatternsSharingPrefixes(t *testing.T) {
-	matcher := New()
+	builder := NewBuilder()
 	patterns := []string{
 		"prefix",
 		"prefixA",
@@ -16,7 +16,9 @@ func TestPatternsSharingPrefixes(t *testing.T) {
 		"prefixABC",
 		"prefixBCD",
 	}
-	if err := matcher.Build(patterns); err != nil {
+	builder.AddPatterns(patterns)
+	matcher, err := builder.Build()
+	if err != nil {
 		t.Fatalf("Build failed: %v", err)
 	}
 	
@@ -51,8 +53,10 @@ func TestManyPatternsMemoryUsage(t *testing.T) {
 		patterns[i] = "pattern" + string(rune('0'+i%10))
 	}
 	
-	matcher := New()
-	if err := matcher.Build(patterns); err != nil {
+	builder := NewBuilder()
+	builder.AddPatterns(patterns)
+	matcher, err := builder.Build()
+	if err != nil {
 		t.Fatalf("Build failed: %v", err)
 	}
 	
@@ -68,9 +72,11 @@ func TestManyPatternsMemoryUsage(t *testing.T) {
 }
 
 func TestWorstCaseBacktracking(t *testing.T) {
-	matcher := New()
+	builder := NewBuilder()
 	patterns := []string{"aaab", "aab", "ab", "b"}
-	if err := matcher.Build(patterns); err != nil {
+	builder.AddPatterns(patterns)
+	matcher, err := builder.Build()
+	if err != nil {
 		t.Fatalf("Build failed: %v", err)
 	}
 	
@@ -100,8 +106,10 @@ func TestCharacterBiasPatterns(t *testing.T) {
 		patterns[i] = strings.Repeat("a", length) + "b"
 	}
 	
-	matcher := New()
-	if err := matcher.Build(patterns); err != nil {
+	builder := NewBuilder()
+	builder.AddPatterns(patterns)
+	matcher, err := builder.Build()
+	if err != nil {
 		t.Fatalf("Build failed: %v", err)
 	}
 	

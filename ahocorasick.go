@@ -5,9 +5,16 @@
 //
 // Example usage:
 //
-//	m := goahocorasick.New()
-//	m.Build([]string{"he", "she", "his", "hers"})
-//	matches := m.FindAll("ushers")
+//	builder := goahocorasick.NewBuilder()
+//	builder.AddPatterns([]string{"he", "she", "his", "hers"})
+//	matcher, err := builder.Build()
+//	if err != nil {
+//		log.Fatal(err)
+//	}
+//	matches, err := matcher.FindAll("ushers")
+//	if err != nil {
+//		log.Fatal(err)
+//	}
 //	for _, match := range matches {
 //		fmt.Printf("Found '%s' at position %d-%d\n", match.Pattern, match.Start, match.End)
 //	}
@@ -17,6 +24,68 @@ import (
 	"errors"
 	"unicode/utf8"
 )
+
+// Builder is used to construct an immutable Matcher.
+// The Builder pattern allows for a clear separation between the construction
+// and usage phases, enabling lock-free concurrent access to the resulting Matcher.
+type Builder struct {
+	// patterns stores patterns to be built into the matcher
+	patterns []string
+}
+
+// NewBuilder creates a new Builder instance for constructing a Matcher.
+func NewBuilder() *Builder {
+	return &Builder{
+		patterns: make([]string, 0),
+	}
+}
+
+// AddPattern adds a pattern to the builder.
+// Empty patterns are ignored.
+func (b *Builder) AddPattern(pattern string) *Builder {
+	if len(pattern) > 0 {
+		b.patterns = append(b.patterns, pattern)
+	}
+	return b
+}
+
+// AddPatterns adds multiple patterns to the builder.
+// Empty patterns are ignored.
+func (b *Builder) AddPatterns(patterns []string) *Builder {
+	for _, pattern := range patterns {
+		b.AddPattern(pattern)
+	}
+	return b
+}
+
+// Build constructs an immutable Matcher from the patterns added to the builder.
+// The resulting Matcher is safe for concurrent use without locks.
+//
+// Returns an error if:
+//   - no patterns were added
+//   - all patterns are empty
+func (b *Builder) Build() (*Matcher, error) {
+	if len(b.patterns) == 0 {
+		return nil, errors.New("no patterns provided")
+	}
+	
+	m := &Matcher{
+		root: &Node{
+			depth: 0,
+		},
+		patterns:    make([]string, 0, len(b.patterns)),
+		patternLens: make([]int, 0, len(b.patterns)),
+	}
+	
+	for _, pattern := range b.patterns {
+		m.addPattern(pattern, len(m.patterns))
+		m.patterns = append(m.patterns, pattern)
+		m.patternLens = append(m.patternLens, utf8.RuneCountInString(pattern))
+	}
+	
+	m.buildFailureFunction()
+	return m, nil
+}
 
 // Node represents a node in the Aho-Corasick trie data structure.
 // Each node contains references to its children, parent, and failure link,
@@ -75,7 +144,7 @@ func (n *Node) forEachChild(fn func(rune, *Node)) {
 
 // Matcher implements the Aho-Corasick algorithm for multiple pattern matching.
 // It builds a trie from patterns and uses failure links for efficient matching.
-// Note: Matcher is not safe for concurrent use.
+// Once built, a Matcher is immutable and safe for concurrent use without locks.
 type Matcher struct {
 	// root is the root node of the trie
 	root        *Node
@@ -85,52 +154,71 @@ type Matcher struct {
 	patternLens []int
 }
 
-// New creates a new Matcher instance.
-// The matcher must be built with patterns using Build() before it can be used for matching.
-func New() *Matcher {
-	return &Matcher{
-		root: &Node{
-			depth: 0,
-		},
-		patterns:    make([]string, 0),
-		patternLens: make([]int, 0),
-	}
+// Match represents a pattern match found in the text.
+type Match struct {
+	// Pattern is the matched pattern string
+	Pattern string
+	// Index is the index of the pattern in the original pattern slice
+	Index   int
+	// Start is the starting position of the match in the text (in runes)
+	Start   int
+	// End is the ending position of the match in the text (in runes)
+	End     int
 }
 
-// Build constructs the Aho-Corasick automaton from the given patterns.
-// Empty patterns are ignored. This method must be called before FindAll.
-// Calling Build multiple times will reset the matcher with new patterns.
+// FindAll finds all occurrences of the patterns in the given text.
+// Returns a slice of Match structs, each representing a pattern match.
+// The matches are returned in the order they are found in the text.
+// Overlapping matches are all reported.
+//
+// The Start and End positions in Match are measured in runes, not bytes.
+// This method properly handles UTF-8 encoded text.
+// This method is safe for concurrent use.
 //
 // Returns an error if:
-//   - patterns is nil
-//   - all patterns are empty
-func (m *Matcher) Build(patterns []string) error {
-	if patterns == nil {
-		return errors.New("patterns cannot be nil")
+//   - text contains invalid UTF-8 sequences
+func (m *Matcher) FindAll(text string) ([]Match, error) {
+	if m == nil || m.root == nil {
+		return nil, errors.New("matcher not built")
 	}
 	
-	m.root = &Node{
-		depth: 0,
+	if !utf8.ValidString(text) {
+		return nil, errors.New("text contains invalid UTF-8 sequences")
 	}
-	m.patterns = make([]string, 0)
-	m.patternLens = make([]int, 0)
 	
-	validPatternCount := 0
-	for _, pattern := range patterns {
-		if len(pattern) > 0 {
-			m.addPattern(pattern, len(m.patterns))
-			m.patterns = append(m.patterns, pattern)
-			m.patternLens = append(m.patternLens, utf8.RuneCountInString(pattern))
-			validPatternCount++
+	matches := make([]Match, 0, 16)
+	node := m.root
+	
+	pos := 0
+	for i := 0; i < len(text); {
+		r, size := utf8.DecodeRuneInString(text[i:])
+		
+		for node != m.root && node.getChild(r) == nil {
+			node = node.fail
 		}
+		
+		if child := node.getChild(r); child != nil {
+			node = child
+		}
+		
+		if len(node.output) > 0 {
+			for _, patternIndex := range node.output {
+				pattern := m.patterns[patternIndex]
+				patternRuneLen := m.patternLens[patternIndex]
+				matches = append(matches, Match{
+					Pattern: pattern,
+					Index:   patternIndex,
+					Start:   pos - patternRuneLen + 1,
+					End:     pos + 1,
+				})
+			}
+		}
+		
+		i += size
+		pos++
 	}
 	
-	if validPatternCount == 0 {
-		return errors.New("no valid patterns provided")
-	}
-	
-	m.buildFailureFunction()
-	return nil
+	return matches, nil
 }
 
 // addPattern adds a pattern to the trie with the given index.
@@ -194,71 +282,4 @@ func (m *Matcher) buildFailureFunction() {
 			}
 		})
 	}
-}
-
-// Match represents a pattern match found in the text.
-type Match struct {
-	// Pattern is the matched pattern string
-	Pattern string
-	// Index is the index of the pattern in the original pattern slice
-	Index   int
-	// Start is the starting position of the match in the text (in runes)
-	Start   int
-	// End is the ending position of the match in the text (in runes)
-	End     int
-}
-
-// FindAll finds all occurrences of the patterns in the given text.
-// Returns a slice of Match structs, each representing a pattern match.
-// The matches are returned in the order they are found in the text.
-// Overlapping matches are all reported.
-//
-// The Start and End positions in Match are measured in runes, not bytes.
-// This method properly handles UTF-8 encoded text.
-//
-// Returns an error if:
-//   - Build() has not been called yet
-//   - text contains invalid UTF-8 sequences
-func (m *Matcher) FindAll(text string) ([]Match, error) {
-	if m.root == nil || len(m.patterns) == 0 {
-		return nil, errors.New("matcher not built: call Build() first")
-	}
-	
-	if !utf8.ValidString(text) {
-		return nil, errors.New("text contains invalid UTF-8 sequences")
-	}
-	
-	matches := make([]Match, 0, 16)
-	node := m.root
-	
-	pos := 0
-	for i := 0; i < len(text); {
-		r, size := utf8.DecodeRuneInString(text[i:])
-		
-		for node != m.root && node.getChild(r) == nil {
-			node = node.fail
-		}
-		
-		if child := node.getChild(r); child != nil {
-			node = child
-		}
-		
-		if len(node.output) > 0 {
-			for _, patternIndex := range node.output {
-				pattern := m.patterns[patternIndex]
-				patternRuneLen := m.patternLens[patternIndex]
-				matches = append(matches, Match{
-					Pattern: pattern,
-					Index:   patternIndex,
-					Start:   pos - patternRuneLen + 1,
-					End:     pos + 1,
-				})
-			}
-		}
-		
-		i += size
-		pos++
-	}
-	
-	return matches, nil
 }

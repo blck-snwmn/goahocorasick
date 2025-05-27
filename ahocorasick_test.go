@@ -50,8 +50,10 @@ func TestPatternMatching(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			matcher := New()
-			if err := matcher.Build(tc.patterns); err != nil {
+			builder := NewBuilder()
+			builder.AddPatterns(tc.patterns)
+			matcher, err := builder.Build()
+			if err != nil {
 				t.Fatalf("Build failed: %v", err)
 			}
 
@@ -88,8 +90,10 @@ func TestUnicodeAndSpecialCharacters(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			matcher := New()
-			if err := matcher.Build(tc.patterns); err != nil {
+			builder := NewBuilder()
+			builder.AddPatterns(tc.patterns)
+			matcher, err := builder.Build()
+			if err != nil {
 				t.Fatalf("Build failed: %v", err)
 			}
 
@@ -107,28 +111,26 @@ func TestUnicodeAndSpecialCharacters(t *testing.T) {
 
 
 func TestEmptyPatterns(t *testing.T) {
-	matcher := New()
+	builder := NewBuilder()
 	patterns := []string{}
-	err := matcher.Build(patterns)
+	builder.AddPatterns(patterns)
+	matcher, err := builder.Build()
 	if err == nil {
 		t.Fatal("Expected error for empty patterns, got nil")
 	}
 	
-	text := "test"
-	matches, err := matcher.FindAll(text)
-	if err == nil {
-		t.Fatal("Expected error when FindAll called without successful Build")
-	}
-	
-	if len(matches) != 0 {
-		t.Errorf("Expected no matches for empty patterns, got %v", matches)
+	// matcher should be nil when Build() returns an error
+	if matcher != nil {
+		t.Fatal("Expected nil matcher when Build fails")
 	}
 }
 
 func TestEmptyStringPattern(t *testing.T) {
-	matcher := New()
+	builder := NewBuilder()
 	patterns := []string{"", "test"}
-	if err := matcher.Build(patterns); err != nil {
+	builder.AddPatterns(patterns)
+	matcher, err := builder.Build()
+	if err != nil {
 		t.Fatalf("Build failed: %v", err)
 	}
 	
@@ -148,9 +150,11 @@ func TestEmptyStringPattern(t *testing.T) {
 }
 
 func TestDuplicatePatterns(t *testing.T) {
-	matcher := New()
+	builder := NewBuilder()
 	patterns := []string{"abc", "abc", "abc"}
-	if err := matcher.Build(patterns); err != nil {
+	builder.AddPatterns(patterns)
+	matcher, err := builder.Build()
+	if err != nil {
 		t.Fatalf("Build failed: %v", err)
 	}
 	
@@ -172,9 +176,11 @@ func TestDuplicatePatterns(t *testing.T) {
 }
 
 func TestSingleCharacterPatterns(t *testing.T) {
-	matcher := New()
+	builder := NewBuilder()
 	patterns := []string{"a", "b", "c", "d"}
-	if err := matcher.Build(patterns); err != nil {
+	builder.AddPatterns(patterns)
+	matcher, err := builder.Build()
+	if err != nil {
 		t.Fatalf("Build failed: %v", err)
 	}
 	
@@ -200,23 +206,25 @@ func TestSingleCharacterPatterns(t *testing.T) {
 }
 
 func TestFindAllBeforeBuild(t *testing.T) {
-	matcher := New()
-	text := "test"
-	matches, err := matcher.FindAll(text)
+	builder := NewBuilder()
+	// Build without adding patterns to test error
+	matcher, err := builder.Build()
 	
 	if err == nil {
-		t.Error("Expected error when FindAll called before Build, got nil")
+		t.Fatal("Expected error when Build called without patterns")
 	}
-	if len(matches) != 0 {
-		t.Errorf("Expected no matches before Build, got %v", matches)
+	
+	if matcher != nil {
+		t.Fatal("Expected nil matcher when Build fails")
 	}
 }
 
 func TestRebuild(t *testing.T) {
-	matcher := New()
-	
+	builder1 := NewBuilder()
 	patterns1 := []string{"abc", "def"}
-	if err := matcher.Build(patterns1); err != nil {
+	builder1.AddPatterns(patterns1)
+	matcher, err := builder1.Build()
+	if err != nil {
 		t.Fatalf("First Build failed: %v", err)
 	}
 	
@@ -235,12 +243,15 @@ func TestRebuild(t *testing.T) {
 		t.Errorf("First build: Expected %v, got %v", expected1, matches1)
 	}
 	
+	builder2 := NewBuilder()
 	patterns2 := []string{"xyz"}
-	if err := matcher.Build(patterns2); err != nil {
+	builder2.AddPatterns(patterns2)
+	matcher2, err := builder2.Build()
+	if err != nil {
 		t.Fatalf("Second Build failed: %v", err)
 	}
 	
-	matches2, err := matcher.FindAll(text)
+	matches2, err := matcher2.FindAll(text)
 	if err != nil {
 		t.Fatalf("Second FindAll failed: %v", err)
 	}

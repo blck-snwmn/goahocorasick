@@ -6,9 +6,11 @@ import (
 )
 
 func TestComplexFailureLinks(t *testing.T) {
-	matcher := New()
+	builder := NewBuilder()
 	patterns := []string{"abcde", "cde", "bcde", "de", "e"}
-	if err := matcher.Build(patterns); err != nil {
+	builder.AddPatterns(patterns)
+	matcher, err := builder.Build()
+	if err != nil {
 		t.Fatalf("Build failed: %v", err)
 	}
 	
@@ -32,9 +34,11 @@ func TestComplexFailureLinks(t *testing.T) {
 }
 
 func TestDeepNestingPatterns(t *testing.T) {
-	matcher := New()
+	builder := NewBuilder()
 	patterns := []string{"aaaa", "aaa", "aa", "a"}
-	if err := matcher.Build(patterns); err != nil {
+	builder.AddPatterns(patterns)
+	matcher, err := builder.Build()
+	if err != nil {
 		t.Fatalf("Build failed: %v", err)
 	}
 	
@@ -63,9 +67,11 @@ func TestDeepNestingPatterns(t *testing.T) {
 }
 
 func TestSuffixLinkOutput(t *testing.T) {
-	matcher := New()
+	builder := NewBuilder()
 	patterns := []string{"she", "he", "hers"}
-	if err := matcher.Build(patterns); err != nil {
+	builder.AddPatterns(patterns)
+	matcher, err := builder.Build()
+	if err != nil {
 		t.Fatalf("Build failed: %v", err)
 	}
 	
@@ -87,9 +93,11 @@ func TestSuffixLinkOutput(t *testing.T) {
 }
 
 func TestFailureFunctionWithOverlap(t *testing.T) {
-	matcher := New()
+	builder := NewBuilder()
 	patterns := []string{"abab", "bab", "ab"}
-	if err := matcher.Build(patterns); err != nil {
+	builder.AddPatterns(patterns)
+	matcher, err := builder.Build()
+	if err != nil {
 		t.Fatalf("Build failed: %v", err)
 	}
 	
@@ -118,9 +126,11 @@ func TestFailureFunctionWithOverlap(t *testing.T) {
 }
 
 func TestPrefixSuffixPatterns(t *testing.T) {
-	matcher := New()
+	builder := NewBuilder()
 	patterns := []string{"abcab", "cab", "ab", "bcab"}
-	if err := matcher.Build(patterns); err != nil {
+	builder.AddPatterns(patterns)
+	matcher, err := builder.Build()
+	if err != nil {
 		t.Fatalf("Build failed: %v", err)
 	}
 	

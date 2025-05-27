@@ -39,8 +39,9 @@ func TestBuildErrors(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			m := New()
-			err := m.Build(tt.patterns)
+			builder := NewBuilder()
+			builder.AddPatterns(tt.patterns)
+			_, err := builder.Build()
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Build() error = %v, wantErr %v", err, tt.wantErr)
 			}
@@ -58,7 +59,8 @@ func TestFindAllErrors(t *testing.T) {
 		{
 			name: "matcher not built",
 			setup: func() *Matcher {
-				return New()
+				// Return nil to simulate matcher not built
+				return nil
 			},
 			text:    "test text",
 			wantErr: true,
@@ -66,8 +68,9 @@ func TestFindAllErrors(t *testing.T) {
 		{
 			name: "valid matcher with valid text",
 			setup: func() *Matcher {
-				m := New()
-				_ = m.Build([]string{"test"})
+				builder := NewBuilder()
+				builder.AddPatterns([]string{"test"})
+				m, _ := builder.Build()
 				return m
 			},
 			text:    "test text",
@@ -76,8 +79,9 @@ func TestFindAllErrors(t *testing.T) {
 		{
 			name: "valid matcher with invalid UTF-8",
 			setup: func() *Matcher {
-				m := New()
-				_ = m.Build([]string{"test"})
+				builder := NewBuilder()
+				builder.AddPatterns([]string{"test"})
+				m, _ := builder.Build()
 				return m
 			},
 			text:    "test \xbd text",
@@ -86,8 +90,9 @@ func TestFindAllErrors(t *testing.T) {
 		{
 			name: "valid matcher with empty text",
 			setup: func() *Matcher {
-				m := New()
-				_ = m.Build([]string{"test"})
+				builder := NewBuilder()
+				builder.AddPatterns([]string{"test"})
+				m, _ := builder.Build()
 				return m
 			},
 			text:    "",
@@ -107,16 +112,18 @@ func TestFindAllErrors(t *testing.T) {
 }
 
 func TestBuildAfterBuildWithError(t *testing.T) {
-	m := New()
-	
 	// First build with error
-	err := m.Build(nil)
+	builder1 := NewBuilder()
+	builder1.AddPatterns(nil)
+	_, err := builder1.Build()
 	if err == nil {
 		t.Error("Expected error for nil patterns")
 	}
 	
 	// Second build with valid patterns should succeed
-	err = m.Build([]string{"valid", "patterns"})
+	builder2 := NewBuilder()
+	builder2.AddPatterns([]string{"valid", "patterns"})
+	m, err := builder2.Build()
 	if err != nil {
 		t.Errorf("Expected no error for valid patterns, got: %v", err)
 	}

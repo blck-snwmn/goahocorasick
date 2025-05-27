@@ -49,8 +49,10 @@ func TestBoundaryConditions(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			matcher := New()
-			if err := matcher.Build(tc.patterns); err != nil {
+			builder := NewBuilder()
+			builder.AddPatterns(tc.patterns)
+			matcher, err := builder.Build()
+			if err != nil {
 				t.Fatalf("Build failed: %v", err)
 			}
 
@@ -68,9 +70,11 @@ func TestBoundaryConditions(t *testing.T) {
 
 func TestVeryLongPattern(t *testing.T) {
 	longPattern := strings.Repeat("a", 1000)
-	matcher := New()
+	builder := NewBuilder()
 	patterns := []string{longPattern, "b"}
-	if err := matcher.Build(patterns); err != nil {
+	builder.AddPatterns(patterns)
+	matcher, err := builder.Build()
+	if err != nil {
 		t.Fatalf("Build failed: %v", err)
 	}
 	
@@ -96,8 +100,10 @@ func TestManyShortPatterns(t *testing.T) {
 		patterns[i] = string(rune('a' + i%26))
 	}
 	
-	matcher := New()
-	if err := matcher.Build(patterns); err != nil {
+	builder := NewBuilder()
+	builder.AddPatterns(patterns)
+	matcher, err := builder.Build()
+	if err != nil {
 		t.Fatalf("Build failed: %v", err)
 	}
 	
@@ -113,9 +119,11 @@ func TestManyShortPatterns(t *testing.T) {
 }
 
 func TestControlCharacters(t *testing.T) {
-	matcher := New()
+	builder := NewBuilder()
 	patterns := []string{"line\n", "\ttab", "return\r"}
-	if err := matcher.Build(patterns); err != nil {
+	builder.AddPatterns(patterns)
+	matcher, err := builder.Build()
+	if err != nil {
 		t.Fatalf("Build failed: %v", err)
 	}
 	
@@ -137,9 +145,11 @@ func TestControlCharacters(t *testing.T) {
 }
 
 func TestEmojisAndComplexUnicode(t *testing.T) {
-	matcher := New()
+	builder := NewBuilder()
 	patterns := []string{"😀", "👨‍👩‍👧‍👦", "🇯🇵", "𠮷"}
-	if err := matcher.Build(patterns); err != nil {
+	builder.AddPatterns(patterns)
+	matcher, err := builder.Build()
+	if err != nil {
 		t.Fatalf("Build failed: %v", err)
 	}
 	

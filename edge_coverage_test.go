@@ -6,9 +6,11 @@ import (
 
 
 func TestEmptyOutputSuffixLink(t *testing.T) {
-	matcher := New()
+	builder := NewBuilder()
 	patterns := []string{"xyz", "yz"}
-	if err := matcher.Build(patterns); err != nil {
+	builder.AddPatterns(patterns)
+	matcher, err := builder.Build()
+	if err != nil {
 		t.Fatalf("Build failed: %v", err)
 	}
 	
