@@ -1,19 +1,44 @@
+// Package goahocorasick implements the Aho-Corasick algorithm for efficient
+// multiple pattern matching. The algorithm constructs a finite state machine
+// from a set of patterns and can find all occurrences of any pattern in a text
+// in linear time relative to the length of the text.
+//
+// Example usage:
+//
+//	m := goahocorasick.New()
+//	m.Build([]string{"he", "she", "his", "hers"})
+//	matches := m.FindAll("ushers")
+//	for _, match := range matches {
+//		fmt.Printf("Found '%s' at position %d-%d\n", match.Pattern, match.Start, match.End)
+//	}
 package goahocorasick
 
 import (
 	"unicode/utf8"
 )
 
+// Node represents a node in the Aho-Corasick trie data structure.
+// Each node contains references to its children, parent, and failure link,
+// as well as output patterns that end at this node.
 type Node struct {
+	// asciiChildren provides fast access for ASCII characters (0-127)
 	asciiChildren [128]*Node
+	// children stores non-ASCII characters using a map
 	children      map[rune]*Node
+	// parent points to the parent node in the trie
 	parent        *Node
+	// fail points to the failure link used during matching
 	fail          *Node
+	// output contains indices of patterns that end at this node
 	output        []int
+	// depth is the distance from the root node
 	depth         int
+	// character is the character that leads to this node from its parent
 	character     rune
 }
 
+// getChild returns the child node for the given rune, or nil if not found.
+// Uses optimized array lookup for ASCII characters.
 func (n *Node) getChild(r rune) *Node {
 	if r < 128 {
 		return n.asciiChildren[r]
@@ -21,6 +46,8 @@ func (n *Node) getChild(r rune) *Node {
 	return n.children[r]
 }
 
+// setChild sets the child node for the given rune.
+// Uses optimized array storage for ASCII characters and map for others.
 func (n *Node) setChild(r rune, child *Node) {
 	if r < 128 {
 		n.asciiChildren[r] = child
@@ -32,6 +59,8 @@ func (n *Node) setChild(r rune, child *Node) {
 	}
 }
 
+// forEachChild iterates over all child nodes and calls the provided function.
+// Iterates through ASCII children first, then non-ASCII children.
 func (n *Node) forEachChild(fn func(rune, *Node)) {
 	for i, child := range n.asciiChildren {
 		if child != nil {
@@ -43,12 +72,20 @@ func (n *Node) forEachChild(fn func(rune, *Node)) {
 	}
 }
 
+// Matcher implements the Aho-Corasick algorithm for multiple pattern matching.
+// It builds a trie from patterns and uses failure links for efficient matching.
+// Note: Matcher is not safe for concurrent use.
 type Matcher struct {
+	// root is the root node of the trie
 	root        *Node
+	// patterns stores all patterns indexed by their ID
 	patterns    []string
+	// patternLens stores the rune length of each pattern for efficient access
 	patternLens []int
 }
 
+// New creates a new Matcher instance.
+// The matcher must be built with patterns using Build() before it can be used for matching.
 func New() *Matcher {
 	return &Matcher{
 		root: &Node{
@@ -59,6 +96,9 @@ func New() *Matcher {
 	}
 }
 
+// Build constructs the Aho-Corasick automaton from the given patterns.
+// Empty patterns are ignored. This method must be called before FindAll.
+// Calling Build multiple times will reset the matcher with new patterns.
 func (m *Matcher) Build(patterns []string) {
 	m.root = &Node{
 		depth: 0,
@@ -77,6 +117,8 @@ func (m *Matcher) Build(patterns []string) {
 	m.buildFailureFunction()
 }
 
+// addPattern adds a pattern to the trie with the given index.
+// It creates nodes as needed and marks the final node with the pattern index.
 func (m *Matcher) addPattern(pattern string, index int) {
 	node := m.root
 	
@@ -99,6 +141,9 @@ func (m *Matcher) addPattern(pattern string, index int) {
 	node.output = append(node.output, index)
 }
 
+// buildFailureFunction constructs failure links for the Aho-Corasick automaton.
+// This enables the algorithm to efficiently handle mismatches by falling back
+// to the longest proper suffix that is also a prefix of some pattern.
 func (m *Matcher) buildFailureFunction() {
 	queue := make([]*Node, 0, 64)
 	
@@ -135,13 +180,25 @@ func (m *Matcher) buildFailureFunction() {
 	}
 }
 
+// Match represents a pattern match found in the text.
 type Match struct {
+	// Pattern is the matched pattern string
 	Pattern string
+	// Index is the index of the pattern in the original pattern slice
 	Index   int
+	// Start is the starting position of the match in the text (in runes)
 	Start   int
+	// End is the ending position of the match in the text (in runes)
 	End     int
 }
 
+// FindAll finds all occurrences of the patterns in the given text.
+// Returns a slice of Match structs, each representing a pattern match.
+// The matches are returned in the order they are found in the text.
+// Overlapping matches are all reported.
+//
+// The Start and End positions in Match are measured in runes, not bytes.
+// This method properly handles UTF-8 encoded text.
 func (m *Matcher) FindAll(text string) []Match {
 	matches := make([]Match, 0, 16)
 	node := m.root
