@@ -1,6 +1,7 @@
 package goahocorasick
 
 import (
+	"regexp"
 	"strings"
 	"testing"
 )
@@ -52,6 +53,7 @@ func BenchmarkComparison5Patterns(b *testing.B) {
 		if err := matcher.Build(patterns); err != nil {
 			b.Fatalf("Build failed: %v", err)
 		}
+		b.ReportAllocs()
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
 			_, _ = matcher.FindAll(text)
@@ -59,9 +61,36 @@ func BenchmarkComparison5Patterns(b *testing.B) {
 	})
 	
 	b.Run("NaiveSearch", func(b *testing.B) {
+		b.ReportAllocs()
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
 			_ = naiveSearch(text, patterns)
+		}
+	})
+	
+	b.Run("StringsContains", func(b *testing.B) {
+		b.ReportAllocs()
+		b.ResetTimer()
+		for i := 0; i < b.N; i++ {
+			matches := 0
+			for _, pattern := range patterns {
+				if strings.Contains(text, pattern) {
+					matches++
+				}
+			}
+		}
+	})
+	
+	b.Run("Regexp", func(b *testing.B) {
+		pattern := strings.Join(patterns, "|")
+		re, err := regexp.Compile(pattern)
+		if err != nil {
+			b.Fatalf("Regexp compile failed: %v", err)
+		}
+		b.ReportAllocs()
+		b.ResetTimer()
+		for i := 0; i < b.N; i++ {
+			_ = re.FindAllStringIndex(text, -1)
 		}
 	})
 }
@@ -75,6 +104,7 @@ func BenchmarkComparison20Patterns(b *testing.B) {
 		if err := matcher.Build(patterns); err != nil {
 			b.Fatalf("Build failed: %v", err)
 		}
+		b.ReportAllocs()
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
 			_, _ = matcher.FindAll(text)
@@ -82,9 +112,36 @@ func BenchmarkComparison20Patterns(b *testing.B) {
 	})
 	
 	b.Run("NaiveSearch", func(b *testing.B) {
+		b.ReportAllocs()
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
 			_ = naiveSearch(text, patterns)
+		}
+	})
+	
+	b.Run("StringsContains", func(b *testing.B) {
+		b.ReportAllocs()
+		b.ResetTimer()
+		for i := 0; i < b.N; i++ {
+			matches := 0
+			for _, pattern := range patterns {
+				if strings.Contains(text, pattern) {
+					matches++
+				}
+			}
+		}
+	})
+	
+	b.Run("Regexp", func(b *testing.B) {
+		pattern := strings.Join(patterns, "|")
+		re, err := regexp.Compile(pattern)
+		if err != nil {
+			b.Fatalf("Regexp compile failed: %v", err)
+		}
+		b.ReportAllocs()
+		b.ResetTimer()
+		for i := 0; i < b.N; i++ {
+			_ = re.FindAllStringIndex(text, -1)
 		}
 	})
 }
@@ -98,6 +155,7 @@ func BenchmarkComparison100Patterns(b *testing.B) {
 		if err := matcher.Build(patterns); err != nil {
 			b.Fatalf("Build failed: %v", err)
 		}
+		b.ReportAllocs()
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
 			_, _ = matcher.FindAll(text)
@@ -105,9 +163,38 @@ func BenchmarkComparison100Patterns(b *testing.B) {
 	})
 	
 	b.Run("NaiveSearch", func(b *testing.B) {
+		b.ReportAllocs()
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
 			_ = naiveSearch(text, patterns)
+		}
+	})
+	
+	b.Run("StringsContains", func(b *testing.B) {
+		b.ReportAllocs()
+		b.ResetTimer()
+		for i := 0; i < b.N; i++ {
+			matches := 0
+			for _, pattern := range patterns {
+				if strings.Contains(text, pattern) {
+					matches++
+				}
+			}
+		}
+	})
+	
+	b.Run("Regexp", func(b *testing.B) {
+		// Limit patterns for regexp to avoid "expression too large" error
+		limitedPatterns := patterns[:20]
+		pattern := strings.Join(limitedPatterns, "|")
+		re, err := regexp.Compile(pattern)
+		if err != nil {
+			b.Fatalf("Regexp compile failed: %v", err)
+		}
+		b.ReportAllocs()
+		b.ResetTimer()
+		for i := 0; i < b.N; i++ {
+			_ = re.FindAllStringIndex(text, -1)
 		}
 	})
 }
@@ -121,6 +208,7 @@ func BenchmarkComparisonShortText(b *testing.B) {
 		if err := matcher.Build(patterns); err != nil {
 			b.Fatalf("Build failed: %v", err)
 		}
+		b.ReportAllocs()
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
 			_, _ = matcher.FindAll(text)
@@ -128,9 +216,36 @@ func BenchmarkComparisonShortText(b *testing.B) {
 	})
 	
 	b.Run("NaiveSearch", func(b *testing.B) {
+		b.ReportAllocs()
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
 			_ = naiveSearch(text, patterns)
+		}
+	})
+	
+	b.Run("StringsContains", func(b *testing.B) {
+		b.ReportAllocs()
+		b.ResetTimer()
+		for i := 0; i < b.N; i++ {
+			matches := 0
+			for _, pattern := range patterns {
+				if strings.Contains(text, pattern) {
+					matches++
+				}
+			}
+		}
+	})
+	
+	b.Run("Regexp", func(b *testing.B) {
+		pattern := strings.Join(patterns, "|")
+		re, err := regexp.Compile(pattern)
+		if err != nil {
+			b.Fatalf("Regexp compile failed: %v", err)
+		}
+		b.ReportAllocs()
+		b.ResetTimer()
+		for i := 0; i < b.N; i++ {
+			_ = re.FindAllStringIndex(text, -1)
 		}
 	})
 }
@@ -144,6 +259,7 @@ func BenchmarkComparisonLongText(b *testing.B) {
 		if err := matcher.Build(patterns); err != nil {
 			b.Fatalf("Build failed: %v", err)
 		}
+		b.ReportAllocs()
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
 			_, _ = matcher.FindAll(text)
@@ -151,9 +267,36 @@ func BenchmarkComparisonLongText(b *testing.B) {
 	})
 	
 	b.Run("NaiveSearch", func(b *testing.B) {
+		b.ReportAllocs()
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
 			_ = naiveSearch(text, patterns)
+		}
+	})
+	
+	b.Run("StringsContains", func(b *testing.B) {
+		b.ReportAllocs()
+		b.ResetTimer()
+		for i := 0; i < b.N; i++ {
+			matches := 0
+			for _, pattern := range patterns {
+				if strings.Contains(text, pattern) {
+					matches++
+				}
+			}
+		}
+	})
+	
+	b.Run("Regexp", func(b *testing.B) {
+		pattern := strings.Join(patterns, "|")
+		re, err := regexp.Compile(pattern)
+		if err != nil {
+			b.Fatalf("Regexp compile failed: %v", err)
+		}
+		b.ReportAllocs()
+		b.ResetTimer()
+		for i := 0; i < b.N; i++ {
+			_ = re.FindAllStringIndex(text, -1)
 		}
 	})
 }
@@ -167,6 +310,7 @@ func BenchmarkComparisonVeryLongText(b *testing.B) {
 		if err := matcher.Build(patterns); err != nil {
 			b.Fatalf("Build failed: %v", err)
 		}
+		b.ReportAllocs()
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
 			_, _ = matcher.FindAll(text)
@@ -174,9 +318,36 @@ func BenchmarkComparisonVeryLongText(b *testing.B) {
 	})
 	
 	b.Run("NaiveSearch", func(b *testing.B) {
+		b.ReportAllocs()
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
 			_ = naiveSearch(text, patterns)
+		}
+	})
+	
+	b.Run("StringsContains", func(b *testing.B) {
+		b.ReportAllocs()
+		b.ResetTimer()
+		for i := 0; i < b.N; i++ {
+			matches := 0
+			for _, pattern := range patterns {
+				if strings.Contains(text, pattern) {
+					matches++
+				}
+			}
+		}
+	})
+	
+	b.Run("Regexp", func(b *testing.B) {
+		pattern := strings.Join(patterns, "|")
+		re, err := regexp.Compile(pattern)
+		if err != nil {
+			b.Fatalf("Regexp compile failed: %v", err)
+		}
+		b.ReportAllocs()
+		b.ResetTimer()
+		for i := 0; i < b.N; i++ {
+			_ = re.FindAllStringIndex(text, -1)
 		}
 	})
 }
@@ -194,6 +365,7 @@ func BenchmarkComparisonRealWorldPatterns(b *testing.B) {
 		if err := matcher.Build(patterns); err != nil {
 			b.Fatalf("Build failed: %v", err)
 		}
+		b.ReportAllocs()
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
 			_, _ = matcher.FindAll(text)
@@ -201,9 +373,36 @@ func BenchmarkComparisonRealWorldPatterns(b *testing.B) {
 	})
 	
 	b.Run("NaiveSearch", func(b *testing.B) {
+		b.ReportAllocs()
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
 			_ = naiveSearch(text, patterns)
+		}
+	})
+	
+	b.Run("StringsContains", func(b *testing.B) {
+		b.ReportAllocs()
+		b.ResetTimer()
+		for i := 0; i < b.N; i++ {
+			matches := 0
+			for _, pattern := range patterns {
+				if strings.Contains(text, pattern) {
+					matches++
+				}
+			}
+		}
+	})
+	
+	b.Run("Regexp", func(b *testing.B) {
+		pattern := strings.Join(patterns, "|")
+		re, err := regexp.Compile("(?i)" + pattern) // Case insensitive
+		if err != nil {
+			b.Fatalf("Regexp compile failed: %v", err)
+		}
+		b.ReportAllocs()
+		b.ResetTimer()
+		for i := 0; i < b.N; i++ {
+			_ = re.FindAllStringIndex(text, -1)
 		}
 	})
 }
