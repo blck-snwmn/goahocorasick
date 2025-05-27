@@ -9,10 +9,15 @@ import (
 func TestPatternLongerThanText(t *testing.T) {
 	matcher := New()
 	patterns := []string{"abcdef"}
-	matcher.Build(patterns)
+	if err := matcher.Build(patterns); err != nil {
+		t.Fatalf("Build failed: %v", err)
+	}
 	
 	text := "abc"
-	matches := matcher.FindAll(text)
+	matches, err := matcher.FindAll(text)
+	if err != nil {
+		t.Fatalf("FindAll failed: %v", err)
+	}
 	
 	if len(matches) != 0 {
 		t.Errorf("Expected no matches when pattern is longer than text, got %v", matches)
@@ -22,10 +27,15 @@ func TestPatternLongerThanText(t *testing.T) {
 func TestSingleCharacterText(t *testing.T) {
 	matcher := New()
 	patterns := []string{"a", "ab", "b"}
-	matcher.Build(patterns)
+	if err := matcher.Build(patterns); err != nil {
+		t.Fatalf("Build failed: %v", err)
+	}
 	
 	text := "a"
-	matches := matcher.FindAll(text)
+	matches, err := matcher.FindAll(text)
+	if err != nil {
+		t.Fatalf("FindAll failed: %v", err)
+	}
 	
 	expected := []Match{
 		{Pattern: "a", Index: 0, Start: 0, End: 1},
@@ -39,10 +49,15 @@ func TestSingleCharacterText(t *testing.T) {
 func TestPatternEqualsText(t *testing.T) {
 	matcher := New()
 	patterns := []string{"exact"}
-	matcher.Build(patterns)
+	if err := matcher.Build(patterns); err != nil {
+		t.Fatalf("Build failed: %v", err)
+	}
 	
 	text := "exact"
-	matches := matcher.FindAll(text)
+	matches, err := matcher.FindAll(text)
+	if err != nil {
+		t.Fatalf("FindAll failed: %v", err)
+	}
 	
 	expected := []Match{
 		{Pattern: "exact", Index: 0, Start: 0, End: 5},
@@ -56,10 +71,15 @@ func TestPatternEqualsText(t *testing.T) {
 func TestMatchAtTextBoundaries(t *testing.T) {
 	matcher := New()
 	patterns := []string{"start", "end", "middle"}
-	matcher.Build(patterns)
+	if err := matcher.Build(patterns); err != nil {
+		t.Fatalf("Build failed: %v", err)
+	}
 	
 	text := "start in the middle at the end"
-	matches := matcher.FindAll(text)
+	matches, err := matcher.FindAll(text)
+	if err != nil {
+		t.Fatalf("FindAll failed: %v", err)
+	}
 	
 	expected := []Match{
 		{Pattern: "start", Index: 0, Start: 0, End: 5},
@@ -76,10 +96,15 @@ func TestVeryLongPattern(t *testing.T) {
 	longPattern := strings.Repeat("a", 1000)
 	matcher := New()
 	patterns := []string{longPattern, "b"}
-	matcher.Build(patterns)
+	if err := matcher.Build(patterns); err != nil {
+		t.Fatalf("Build failed: %v", err)
+	}
 	
 	text := longPattern + "b"
-	matches := matcher.FindAll(text)
+	matches, err := matcher.FindAll(text)
+	if err != nil {
+		t.Fatalf("FindAll failed: %v", err)
+	}
 	
 	expected := []Match{
 		{Pattern: longPattern, Index: 0, Start: 0, End: 1000},
@@ -98,10 +123,15 @@ func TestManyShortPatterns(t *testing.T) {
 	}
 	
 	matcher := New()
-	matcher.Build(patterns)
+	if err := matcher.Build(patterns); err != nil {
+		t.Fatalf("Build failed: %v", err)
+	}
 	
 	text := "abcdefghijklmnopqrstuvwxyz"
-	matches := matcher.FindAll(text)
+	matches, err := matcher.FindAll(text)
+	if err != nil {
+		t.Fatalf("FindAll failed: %v", err)
+	}
 	
 	if len(matches) < 26 {
 		t.Errorf("Expected at least 26 matches, got %v", len(matches))
@@ -111,10 +141,15 @@ func TestManyShortPatterns(t *testing.T) {
 func TestControlCharacters(t *testing.T) {
 	matcher := New()
 	patterns := []string{"line\n", "\ttab", "return\r"}
-	matcher.Build(patterns)
+	if err := matcher.Build(patterns); err != nil {
+		t.Fatalf("Build failed: %v", err)
+	}
 	
 	text := "line\ntext\ttabtext return\rtext"
-	matches := matcher.FindAll(text)
+	matches, err := matcher.FindAll(text)
+	if err != nil {
+		t.Fatalf("FindAll failed: %v", err)
+	}
 	
 	expected := []Match{
 		{Pattern: "line\n", Index: 0, Start: 0, End: 5},
@@ -130,10 +165,15 @@ func TestControlCharacters(t *testing.T) {
 func TestEmojisAndComplexUnicode(t *testing.T) {
 	matcher := New()
 	patterns := []string{"😀", "👨‍👩‍👧‍👦", "🇯🇵", "𠮷"}
-	matcher.Build(patterns)
+	if err := matcher.Build(patterns); err != nil {
+		t.Fatalf("Build failed: %v", err)
+	}
 	
 	text := "Hello 😀 family 👨‍👩‍👧‍👦 from 🇯🇵 and 𠮷"
-	matches := matcher.FindAll(text)
+	matches, err := matcher.FindAll(text)
+	if err != nil {
+		t.Fatalf("FindAll failed: %v", err)
+	}
 	
 	expected := []Match{
 		{Pattern: "😀", Index: 0, Start: 6, End: 7},

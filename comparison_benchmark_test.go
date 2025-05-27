@@ -49,10 +49,12 @@ func BenchmarkComparison5Patterns(b *testing.B) {
 	
 	b.Run("AhoCorasick", func(b *testing.B) {
 		matcher := New()
-		matcher.Build(patterns)
+		if err := matcher.Build(patterns); err != nil {
+			b.Fatalf("Build failed: %v", err)
+		}
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
-			_ = matcher.FindAll(text)
+			_, _ = matcher.FindAll(text)
 		}
 	})
 	
@@ -70,10 +72,12 @@ func BenchmarkComparison20Patterns(b *testing.B) {
 	
 	b.Run("AhoCorasick", func(b *testing.B) {
 		matcher := New()
-		matcher.Build(patterns)
+		if err := matcher.Build(patterns); err != nil {
+			b.Fatalf("Build failed: %v", err)
+		}
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
-			_ = matcher.FindAll(text)
+			_, _ = matcher.FindAll(text)
 		}
 	})
 	
@@ -91,10 +95,12 @@ func BenchmarkComparison100Patterns(b *testing.B) {
 	
 	b.Run("AhoCorasick", func(b *testing.B) {
 		matcher := New()
-		matcher.Build(patterns)
+		if err := matcher.Build(patterns); err != nil {
+			b.Fatalf("Build failed: %v", err)
+		}
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
-			_ = matcher.FindAll(text)
+			_, _ = matcher.FindAll(text)
 		}
 	})
 	
@@ -112,10 +118,12 @@ func BenchmarkComparisonShortText(b *testing.B) {
 	
 	b.Run("AhoCorasick", func(b *testing.B) {
 		matcher := New()
-		matcher.Build(patterns)
+		if err := matcher.Build(patterns); err != nil {
+			b.Fatalf("Build failed: %v", err)
+		}
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
-			_ = matcher.FindAll(text)
+			_, _ = matcher.FindAll(text)
 		}
 	})
 	
@@ -133,10 +141,12 @@ func BenchmarkComparisonLongText(b *testing.B) {
 	
 	b.Run("AhoCorasick", func(b *testing.B) {
 		matcher := New()
-		matcher.Build(patterns)
+		if err := matcher.Build(patterns); err != nil {
+			b.Fatalf("Build failed: %v", err)
+		}
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
-			_ = matcher.FindAll(text)
+			_, _ = matcher.FindAll(text)
 		}
 	})
 	
@@ -154,10 +164,12 @@ func BenchmarkComparisonVeryLongText(b *testing.B) {
 	
 	b.Run("AhoCorasick", func(b *testing.B) {
 		matcher := New()
-		matcher.Build(patterns)
+		if err := matcher.Build(patterns); err != nil {
+			b.Fatalf("Build failed: %v", err)
+		}
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
-			_ = matcher.FindAll(text)
+			_, _ = matcher.FindAll(text)
 		}
 	})
 	
@@ -179,10 +191,12 @@ func BenchmarkComparisonRealWorldPatterns(b *testing.B) {
 	
 	b.Run("AhoCorasick", func(b *testing.B) {
 		matcher := New()
-		matcher.Build(patterns)
+		if err := matcher.Build(patterns); err != nil {
+			b.Fatalf("Build failed: %v", err)
+		}
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
-			_ = matcher.FindAll(text)
+			_, _ = matcher.FindAll(text)
 		}
 	})
 	

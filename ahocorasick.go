@@ -14,6 +14,7 @@
 package goahocorasick
 
 import (
+	"errors"
 	"unicode/utf8"
 )
 
@@ -99,22 +100,37 @@ func New() *Matcher {
 // Build constructs the Aho-Corasick automaton from the given patterns.
 // Empty patterns are ignored. This method must be called before FindAll.
 // Calling Build multiple times will reset the matcher with new patterns.
-func (m *Matcher) Build(patterns []string) {
+//
+// Returns an error if:
+//   - patterns is nil
+//   - all patterns are empty
+func (m *Matcher) Build(patterns []string) error {
+	if patterns == nil {
+		return errors.New("patterns cannot be nil")
+	}
+	
 	m.root = &Node{
 		depth: 0,
 	}
 	m.patterns = make([]string, 0)
 	m.patternLens = make([]int, 0)
 	
+	validPatternCount := 0
 	for _, pattern := range patterns {
 		if len(pattern) > 0 {
 			m.addPattern(pattern, len(m.patterns))
 			m.patterns = append(m.patterns, pattern)
 			m.patternLens = append(m.patternLens, utf8.RuneCountInString(pattern))
+			validPatternCount++
 		}
 	}
 	
+	if validPatternCount == 0 {
+		return errors.New("no valid patterns provided")
+	}
+	
 	m.buildFailureFunction()
+	return nil
 }
 
 // addPattern adds a pattern to the trie with the given index.
@@ -199,7 +215,19 @@ type Match struct {
 //
 // The Start and End positions in Match are measured in runes, not bytes.
 // This method properly handles UTF-8 encoded text.
-func (m *Matcher) FindAll(text string) []Match {
+//
+// Returns an error if:
+//   - Build() has not been called yet
+//   - text contains invalid UTF-8 sequences
+func (m *Matcher) FindAll(text string) ([]Match, error) {
+	if m.root == nil || len(m.patterns) == 0 {
+		return nil, errors.New("matcher not built: call Build() first")
+	}
+	
+	if !utf8.ValidString(text) {
+		return nil, errors.New("text contains invalid UTF-8 sequences")
+	}
+	
 	matches := make([]Match, 0, 16)
 	node := m.root
 	
@@ -232,5 +260,5 @@ func (m *Matcher) FindAll(text string) []Match {
 		pos++
 	}
 	
-	return matches
+	return matches, nil
 }

@@ -16,10 +16,15 @@ func TestHighlyRepetitivePatterns(t *testing.T) {
 		"aa",
 		"a",
 	}
-	matcher.Build(patterns)
+	if err := matcher.Build(patterns); err != nil {
+		t.Fatalf("Build failed: %v", err)
+	}
 	
 	text := strings.Repeat("a", 100)
-	matches := matcher.FindAll(text)
+	matches, err := matcher.FindAll(text)
+	if err != nil {
+		t.Fatalf("FindAll failed: %v", err)
+	}
 	
 	if len(matches) == 0 {
 		t.Errorf("Expected many matches for repetitive patterns, got none")
@@ -36,10 +41,15 @@ func TestPatternsSharingPrefixes(t *testing.T) {
 		"prefixABC",
 		"prefixBCD",
 	}
-	matcher.Build(patterns)
+	if err := matcher.Build(patterns); err != nil {
+		t.Fatalf("Build failed: %v", err)
+	}
 	
 	text := "prefixABCDEF"
-	matches := matcher.FindAll(text)
+	matches, err := matcher.FindAll(text)
+	if err != nil {
+		t.Fatalf("FindAll failed: %v", err)
+	}
 	
 	expectedPatterns := map[string]bool{
 		"prefix":    true,
@@ -67,10 +77,15 @@ func TestManyPatternsMemoryUsage(t *testing.T) {
 	}
 	
 	matcher := New()
-	matcher.Build(patterns)
+	if err := matcher.Build(patterns); err != nil {
+		t.Fatalf("Build failed: %v", err)
+	}
 	
 	text := "This is a test with pattern5 and pattern7"
-	matches := matcher.FindAll(text)
+	matches, err := matcher.FindAll(text)
+	if err != nil {
+		t.Fatalf("FindAll failed: %v", err)
+	}
 	
 	if len(matches) == 0 {
 		t.Errorf("Expected matches for large pattern set, got none")
@@ -80,10 +95,15 @@ func TestManyPatternsMemoryUsage(t *testing.T) {
 func TestWorstCaseBacktracking(t *testing.T) {
 	matcher := New()
 	patterns := []string{"aaab", "aab", "ab", "b"}
-	matcher.Build(patterns)
+	if err := matcher.Build(patterns); err != nil {
+		t.Fatalf("Build failed: %v", err)
+	}
 	
 	text := strings.Repeat("a", 100) + "b"
-	matches := matcher.FindAll(text)
+	matches, err := matcher.FindAll(text)
+	if err != nil {
+		t.Fatalf("FindAll failed: %v", err)
+	}
 	
 	foundB := false
 	for _, match := range matches {
@@ -106,10 +126,15 @@ func TestCharacterBiasPatterns(t *testing.T) {
 	}
 	
 	matcher := New()
-	matcher.Build(patterns)
+	if err := matcher.Build(patterns); err != nil {
+		t.Fatalf("Build failed: %v", err)
+	}
 	
 	text := strings.Repeat("a", 50) + "b" + strings.Repeat("a", 50)
-	matches := matcher.FindAll(text)
+	matches, err := matcher.FindAll(text)
+	if err != nil {
+		t.Fatalf("FindAll failed: %v", err)
+	}
 	
 	if len(matches) == 0 {
 		t.Errorf("Expected matches for character bias patterns, got none")
