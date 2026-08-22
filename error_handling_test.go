@@ -119,7 +119,7 @@ func TestBuildAfterBuildWithError(t *testing.T) {
 	if err == nil {
 		t.Error("Expected error for nil patterns")
 	}
-	
+
 	// Second build with valid patterns should succeed
 	builder2 := NewBuilder()
 	builder2.AddPatterns([]string{"valid", "patterns"})
@@ -127,7 +127,7 @@ func TestBuildAfterBuildWithError(t *testing.T) {
 	if err != nil {
 		t.Errorf("Expected no error for valid patterns, got: %v", err)
 	}
-	
+
 	// FindAll should work after successful build
 	matches, err := m.FindAll("valid text with patterns")
 	if err != nil {

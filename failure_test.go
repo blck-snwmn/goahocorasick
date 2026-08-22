@@ -13,13 +13,13 @@ func TestComplexFailureLinks(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Build failed: %v", err)
 	}
-	
+
 	text := "abcde"
 	matches, err := matcher.FindAll(text)
 	if err != nil {
 		t.Fatalf("FindAll failed: %v", err)
 	}
-	
+
 	expected := []Match{
 		{Pattern: "abcde", Index: 0, Start: 0, End: 5},
 		{Pattern: "bcde", Index: 2, Start: 1, End: 5},
@@ -27,7 +27,7 @@ func TestComplexFailureLinks(t *testing.T) {
 		{Pattern: "de", Index: 3, Start: 3, End: 5},
 		{Pattern: "e", Index: 4, Start: 4, End: 5},
 	}
-	
+
 	if !reflect.DeepEqual(matches, expected) {
 		t.Errorf("Expected %v, got %v", expected, matches)
 	}
@@ -41,13 +41,13 @@ func TestDeepNestingPatterns(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Build failed: %v", err)
 	}
-	
+
 	text := "aaaa"
 	matches, err := matcher.FindAll(text)
 	if err != nil {
 		t.Fatalf("FindAll failed: %v", err)
 	}
-	
+
 	expected := []Match{
 		{Pattern: "a", Index: 3, Start: 0, End: 1},
 		{Pattern: "aa", Index: 2, Start: 0, End: 2},
@@ -60,7 +60,7 @@ func TestDeepNestingPatterns(t *testing.T) {
 		{Pattern: "aa", Index: 2, Start: 2, End: 4},
 		{Pattern: "a", Index: 3, Start: 3, End: 4},
 	}
-	
+
 	if !reflect.DeepEqual(matches, expected) {
 		t.Errorf("Expected %v, got %v", expected, matches)
 	}
@@ -74,19 +74,19 @@ func TestSuffixLinkOutput(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Build failed: %v", err)
 	}
-	
+
 	text := "shers"
 	matches, err := matcher.FindAll(text)
 	if err != nil {
 		t.Fatalf("FindAll failed: %v", err)
 	}
-	
+
 	expected := []Match{
 		{Pattern: "she", Index: 0, Start: 0, End: 3},
 		{Pattern: "he", Index: 1, Start: 1, End: 3},
 		{Pattern: "hers", Index: 2, Start: 1, End: 5},
 	}
-	
+
 	if !reflect.DeepEqual(matches, expected) {
 		t.Errorf("Expected %v, got %v", expected, matches)
 	}
@@ -100,13 +100,13 @@ func TestFailureFunctionWithOverlap(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Build failed: %v", err)
 	}
-	
+
 	text := "abababab"
 	matches, err := matcher.FindAll(text)
 	if err != nil {
 		t.Fatalf("FindAll failed: %v", err)
 	}
-	
+
 	expected := []Match{
 		{Pattern: "ab", Index: 2, Start: 0, End: 2},
 		{Pattern: "abab", Index: 0, Start: 0, End: 4},
@@ -119,7 +119,7 @@ func TestFailureFunctionWithOverlap(t *testing.T) {
 		{Pattern: "bab", Index: 1, Start: 5, End: 8},
 		{Pattern: "ab", Index: 2, Start: 6, End: 8},
 	}
-	
+
 	if !reflect.DeepEqual(matches, expected) {
 		t.Errorf("Expected %v, got %v", expected, matches)
 	}
@@ -133,13 +133,13 @@ func TestPrefixSuffixPatterns(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Build failed: %v", err)
 	}
-	
+
 	text := "abcabcab"
 	matches, err := matcher.FindAll(text)
 	if err != nil {
 		t.Fatalf("FindAll failed: %v", err)
 	}
-	
+
 	expected := []Match{
 		{Pattern: "ab", Index: 2, Start: 0, End: 2},
 		{Pattern: "abcab", Index: 0, Start: 0, End: 5},
@@ -151,7 +151,7 @@ func TestPrefixSuffixPatterns(t *testing.T) {
 		{Pattern: "cab", Index: 1, Start: 5, End: 8},
 		{Pattern: "ab", Index: 2, Start: 6, End: 8},
 	}
-	
+
 	if !reflect.DeepEqual(matches, expected) {
 		t.Errorf("Expected %v, got %v", expected, matches)
 	}
