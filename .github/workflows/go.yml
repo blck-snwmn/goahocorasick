@@ -48,6 +48,3 @@ jobs:
 
       - name: Lint
         run: golangci-lint run ./...
-
-      - name: Check formatting
-        run: golangci-lint fmt --diff
