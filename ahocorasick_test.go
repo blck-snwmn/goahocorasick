@@ -109,7 +109,6 @@ func TestUnicodeAndSpecialCharacters(t *testing.T) {
 	}
 }
 
-
 func TestEmptyPatterns(t *testing.T) {
 	builder := NewBuilder()
 	patterns := []string{}
@@ -118,7 +117,7 @@ func TestEmptyPatterns(t *testing.T) {
 	if err == nil {
 		t.Fatal("Expected error for empty patterns, got nil")
 	}
-	
+
 	// matcher should be nil when Build() returns an error
 	if matcher != nil {
 		t.Fatal("Expected nil matcher when Build fails")
@@ -133,17 +132,17 @@ func TestEmptyStringPattern(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Build failed: %v", err)
 	}
-	
+
 	text := "test"
 	matches, err := matcher.FindAll(text)
 	if err != nil {
 		t.Fatalf("FindAll failed: %v", err)
 	}
-	
+
 	expected := []Match{
 		{Pattern: "test", Index: 0, Start: 0, End: 4},
 	}
-	
+
 	if !reflect.DeepEqual(matches, expected) {
 		t.Errorf("Expected %v, got %v", expected, matches)
 	}
@@ -157,19 +156,19 @@ func TestDuplicatePatterns(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Build failed: %v", err)
 	}
-	
+
 	text := "abc"
 	matches, err := matcher.FindAll(text)
 	if err != nil {
 		t.Fatalf("FindAll failed: %v", err)
 	}
-	
+
 	expected := []Match{
 		{Pattern: "abc", Index: 0, Start: 0, End: 3},
 		{Pattern: "abc", Index: 1, Start: 0, End: 3},
 		{Pattern: "abc", Index: 2, Start: 0, End: 3},
 	}
-	
+
 	if !reflect.DeepEqual(matches, expected) {
 		t.Errorf("Expected %v, got %v", expected, matches)
 	}
@@ -183,13 +182,13 @@ func TestSingleCharacterPatterns(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Build failed: %v", err)
 	}
-	
+
 	text := "abcdcba"
 	matches, err := matcher.FindAll(text)
 	if err != nil {
 		t.Fatalf("FindAll failed: %v", err)
 	}
-	
+
 	expected := []Match{
 		{Pattern: "a", Index: 0, Start: 0, End: 1},
 		{Pattern: "b", Index: 1, Start: 1, End: 2},
@@ -199,7 +198,7 @@ func TestSingleCharacterPatterns(t *testing.T) {
 		{Pattern: "b", Index: 1, Start: 5, End: 6},
 		{Pattern: "a", Index: 0, Start: 6, End: 7},
 	}
-	
+
 	if !reflect.DeepEqual(matches, expected) {
 		t.Errorf("Expected %v, got %v", expected, matches)
 	}
@@ -209,11 +208,11 @@ func TestFindAllBeforeBuild(t *testing.T) {
 	builder := NewBuilder()
 	// Build without adding patterns to test error
 	matcher, err := builder.Build()
-	
+
 	if err == nil {
 		t.Fatal("Expected error when Build called without patterns")
 	}
-	
+
 	if matcher != nil {
 		t.Fatal("Expected nil matcher when Build fails")
 	}
@@ -227,22 +226,22 @@ func TestRebuild(t *testing.T) {
 	if err != nil {
 		t.Fatalf("First Build failed: %v", err)
 	}
-	
+
 	text := "abcdef"
 	matches1, err := matcher.FindAll(text)
 	if err != nil {
 		t.Fatalf("First FindAll failed: %v", err)
 	}
-	
+
 	expected1 := []Match{
 		{Pattern: "abc", Index: 0, Start: 0, End: 3},
 		{Pattern: "def", Index: 1, Start: 3, End: 6},
 	}
-	
+
 	if !reflect.DeepEqual(matches1, expected1) {
 		t.Errorf("First build: Expected %v, got %v", expected1, matches1)
 	}
-	
+
 	builder2 := NewBuilder()
 	patterns2 := []string{"xyz"}
 	builder2.AddPatterns(patterns2)
@@ -250,12 +249,12 @@ func TestRebuild(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Second Build failed: %v", err)
 	}
-	
+
 	matches2, err := matcher2.FindAll(text)
 	if err != nil {
 		t.Fatalf("Second FindAll failed: %v", err)
 	}
-	
+
 	if len(matches2) != 0 {
 		t.Errorf("After rebuild: Expected no matches, got %v", matches2)
 	}

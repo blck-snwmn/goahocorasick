@@ -47,7 +47,7 @@ func generateText(size int) string {
 func BenchmarkComparison5Patterns(b *testing.B) {
 	patterns := []string{"quick", "brown", "fox", "lazy", "dog"}
 	text := generateText(100)
-	
+
 	b.Run("AhoCorasick", func(b *testing.B) {
 		builder := NewBuilder()
 		builder.AddPatterns(patterns)
@@ -61,7 +61,7 @@ func BenchmarkComparison5Patterns(b *testing.B) {
 			_, _ = matcher.FindAll(text)
 		}
 	})
-	
+
 	b.Run("NaiveSearch", func(b *testing.B) {
 		b.ReportAllocs()
 		b.ResetTimer()
@@ -69,7 +69,7 @@ func BenchmarkComparison5Patterns(b *testing.B) {
 			_ = naiveSearch(text, patterns)
 		}
 	})
-	
+
 	b.Run("StringsContains", func(b *testing.B) {
 		b.ReportAllocs()
 		b.ResetTimer()
@@ -82,7 +82,7 @@ func BenchmarkComparison5Patterns(b *testing.B) {
 			}
 		}
 	})
-	
+
 	b.Run("Regexp", func(b *testing.B) {
 		pattern := strings.Join(patterns, "|")
 		re, err := regexp.Compile(pattern)
@@ -100,7 +100,7 @@ func BenchmarkComparison5Patterns(b *testing.B) {
 func BenchmarkComparison20Patterns(b *testing.B) {
 	patterns := generatePatterns(20, 4)
 	text := generateText(100)
-	
+
 	b.Run("AhoCorasick", func(b *testing.B) {
 		builder := NewBuilder()
 		builder.AddPatterns(patterns)
@@ -114,7 +114,7 @@ func BenchmarkComparison20Patterns(b *testing.B) {
 			_, _ = matcher.FindAll(text)
 		}
 	})
-	
+
 	b.Run("NaiveSearch", func(b *testing.B) {
 		b.ReportAllocs()
 		b.ResetTimer()
@@ -122,7 +122,7 @@ func BenchmarkComparison20Patterns(b *testing.B) {
 			_ = naiveSearch(text, patterns)
 		}
 	})
-	
+
 	b.Run("StringsContains", func(b *testing.B) {
 		b.ReportAllocs()
 		b.ResetTimer()
@@ -135,7 +135,7 @@ func BenchmarkComparison20Patterns(b *testing.B) {
 			}
 		}
 	})
-	
+
 	b.Run("Regexp", func(b *testing.B) {
 		pattern := strings.Join(patterns, "|")
 		re, err := regexp.Compile(pattern)
@@ -153,7 +153,7 @@ func BenchmarkComparison20Patterns(b *testing.B) {
 func BenchmarkComparison100Patterns(b *testing.B) {
 	patterns := generatePatterns(100, 4)
 	text := generateText(100)
-	
+
 	b.Run("AhoCorasick", func(b *testing.B) {
 		builder := NewBuilder()
 		builder.AddPatterns(patterns)
@@ -167,7 +167,7 @@ func BenchmarkComparison100Patterns(b *testing.B) {
 			_, _ = matcher.FindAll(text)
 		}
 	})
-	
+
 	b.Run("NaiveSearch", func(b *testing.B) {
 		b.ReportAllocs()
 		b.ResetTimer()
@@ -175,7 +175,7 @@ func BenchmarkComparison100Patterns(b *testing.B) {
 			_ = naiveSearch(text, patterns)
 		}
 	})
-	
+
 	b.Run("StringsContains", func(b *testing.B) {
 		b.ReportAllocs()
 		b.ResetTimer()
@@ -188,7 +188,7 @@ func BenchmarkComparison100Patterns(b *testing.B) {
 			}
 		}
 	})
-	
+
 	b.Run("Regexp", func(b *testing.B) {
 		// Limit patterns for regexp to avoid "expression too large" error
 		limitedPatterns := patterns[:20]
@@ -208,7 +208,7 @@ func BenchmarkComparison100Patterns(b *testing.B) {
 func BenchmarkComparisonShortText(b *testing.B) {
 	patterns := generatePatterns(10, 3)
 	text := generateText(10)
-	
+
 	b.Run("AhoCorasick", func(b *testing.B) {
 		builder := NewBuilder()
 		builder.AddPatterns(patterns)
@@ -222,7 +222,7 @@ func BenchmarkComparisonShortText(b *testing.B) {
 			_, _ = matcher.FindAll(text)
 		}
 	})
-	
+
 	b.Run("NaiveSearch", func(b *testing.B) {
 		b.ReportAllocs()
 		b.ResetTimer()
@@ -230,7 +230,7 @@ func BenchmarkComparisonShortText(b *testing.B) {
 			_ = naiveSearch(text, patterns)
 		}
 	})
-	
+
 	b.Run("StringsContains", func(b *testing.B) {
 		b.ReportAllocs()
 		b.ResetTimer()
@@ -243,7 +243,7 @@ func BenchmarkComparisonShortText(b *testing.B) {
 			}
 		}
 	})
-	
+
 	b.Run("Regexp", func(b *testing.B) {
 		pattern := strings.Join(patterns, "|")
 		re, err := regexp.Compile(pattern)
@@ -261,7 +261,7 @@ func BenchmarkComparisonShortText(b *testing.B) {
 func BenchmarkComparisonLongText(b *testing.B) {
 	patterns := generatePatterns(10, 3)
 	text := generateText(1000)
-	
+
 	b.Run("AhoCorasick", func(b *testing.B) {
 		builder := NewBuilder()
 		builder.AddPatterns(patterns)
@@ -275,7 +275,7 @@ func BenchmarkComparisonLongText(b *testing.B) {
 			_, _ = matcher.FindAll(text)
 		}
 	})
-	
+
 	b.Run("NaiveSearch", func(b *testing.B) {
 		b.ReportAllocs()
 		b.ResetTimer()
@@ -283,7 +283,7 @@ func BenchmarkComparisonLongText(b *testing.B) {
 			_ = naiveSearch(text, patterns)
 		}
 	})
-	
+
 	b.Run("StringsContains", func(b *testing.B) {
 		b.ReportAllocs()
 		b.ResetTimer()
@@ -296,7 +296,7 @@ func BenchmarkComparisonLongText(b *testing.B) {
 			}
 		}
 	})
-	
+
 	b.Run("Regexp", func(b *testing.B) {
 		pattern := strings.Join(patterns, "|")
 		re, err := regexp.Compile(pattern)
@@ -314,7 +314,7 @@ func BenchmarkComparisonLongText(b *testing.B) {
 func BenchmarkComparisonVeryLongText(b *testing.B) {
 	patterns := generatePatterns(10, 3)
 	text := generateText(10000)
-	
+
 	b.Run("AhoCorasick", func(b *testing.B) {
 		builder := NewBuilder()
 		builder.AddPatterns(patterns)
@@ -328,7 +328,7 @@ func BenchmarkComparisonVeryLongText(b *testing.B) {
 			_, _ = matcher.FindAll(text)
 		}
 	})
-	
+
 	b.Run("NaiveSearch", func(b *testing.B) {
 		b.ReportAllocs()
 		b.ResetTimer()
@@ -336,7 +336,7 @@ func BenchmarkComparisonVeryLongText(b *testing.B) {
 			_ = naiveSearch(text, patterns)
 		}
 	})
-	
+
 	b.Run("StringsContains", func(b *testing.B) {
 		b.ReportAllocs()
 		b.ResetTimer()
@@ -349,7 +349,7 @@ func BenchmarkComparisonVeryLongText(b *testing.B) {
 			}
 		}
 	})
-	
+
 	b.Run("Regexp", func(b *testing.B) {
 		pattern := strings.Join(patterns, "|")
 		re, err := regexp.Compile(pattern)
@@ -371,7 +371,7 @@ func BenchmarkComparisonRealWorldPatterns(b *testing.B) {
 		"connection", "request", "response", "server", "client",
 	}
 	text := strings.Repeat("2023-01-01 10:00:00 [ERROR] Failed to connect to server: connection timeout. Request failed with exception. ", 100)
-	
+
 	b.Run("AhoCorasick", func(b *testing.B) {
 		builder := NewBuilder()
 		builder.AddPatterns(patterns)
@@ -385,7 +385,7 @@ func BenchmarkComparisonRealWorldPatterns(b *testing.B) {
 			_, _ = matcher.FindAll(text)
 		}
 	})
-	
+
 	b.Run("NaiveSearch", func(b *testing.B) {
 		b.ReportAllocs()
 		b.ResetTimer()
@@ -393,7 +393,7 @@ func BenchmarkComparisonRealWorldPatterns(b *testing.B) {
 			_ = naiveSearch(text, patterns)
 		}
 	})
-	
+
 	b.Run("StringsContains", func(b *testing.B) {
 		b.ReportAllocs()
 		b.ResetTimer()
@@ -406,7 +406,7 @@ func BenchmarkComparisonRealWorldPatterns(b *testing.B) {
 			}
 		}
 	})
-	
+
 	b.Run("Regexp", func(b *testing.B) {
 		pattern := strings.Join(patterns, "|")
 		re, err := regexp.Compile("(?i)" + pattern) // Case insensitive
