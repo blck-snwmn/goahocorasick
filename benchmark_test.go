@@ -25,7 +25,7 @@ func BenchmarkSmallPatterns(b *testing.B) {
 func BenchmarkManyPatterns(b *testing.B) {
 	builder := NewBuilder()
 	patterns := make([]string, 100)
-	for i := 0; i < 100; i++ {
+	for i := range 100 {
 		patterns[i] = string(rune('a'+i%26)) + string(rune('a'+(i+1)%26))
 	}
 	builder.AddPatterns(patterns)
@@ -78,7 +78,7 @@ func BenchmarkUnicodePatterns(b *testing.B) {
 
 func BenchmarkBuildTime(b *testing.B) {
 	patterns := make([]string, 1000)
-	for i := 0; i < 1000; i++ {
+	for i := range 1000 {
 		patterns[i] = "pattern" + string(rune('0'+i%10))
 	}
 

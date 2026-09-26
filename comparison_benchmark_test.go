@@ -30,9 +30,9 @@ func naiveSearch(text string, patterns []string) []Match {
 
 func generatePatterns(count int, length int) []string {
 	patterns := make([]string, count)
-	for i := 0; i < count; i++ {
+	for i := range count {
 		pattern := ""
-		for j := 0; j < length; j++ {
+		for j := range length {
 			pattern += string(rune('a' + (i+j)%26))
 		}
 		patterns[i] = pattern

@@ -96,7 +96,7 @@ func TestVeryLongPattern(t *testing.T) {
 
 func TestManyShortPatterns(t *testing.T) {
 	patterns := make([]string, 1000)
-	for i := 0; i < 1000; i++ {
+	for i := range 1000 {
 		patterns[i] = string(rune('a' + i%26))
 	}
 

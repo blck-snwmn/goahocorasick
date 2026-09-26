@@ -48,7 +48,7 @@ func TestPatternsSharingPrefixes(t *testing.T) {
 
 func TestManyPatternsMemoryUsage(t *testing.T) {
 	patterns := make([]string, 10000)
-	for i := 0; i < 10000; i++ {
+	for i := range 10000 {
 		patterns[i] = "pattern" + string(rune('0'+i%10))
 	}
 
@@ -100,7 +100,7 @@ func TestWorstCaseBacktracking(t *testing.T) {
 
 func TestCharacterBiasPatterns(t *testing.T) {
 	patterns := make([]string, 100)
-	for i := 0; i < 100; i++ {
+	for i := range 100 {
 		length := i%10 + 1
 		patterns[i] = strings.Repeat("a", length) + "b"
 	}
