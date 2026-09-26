@@ -60,7 +60,7 @@ func BenchmarkConcurrentFindAll(b *testing.B) {
 func BenchmarkConcurrentManyPatterns(b *testing.B) {
 	// Create 100 patterns
 	patterns := make([]string, 100)
-	for i := 0; i < 100; i++ {
+	for i := range 100 {
 		patterns[i] = string(rune('a'+i%26)) + string(rune('a'+(i+1)%26)) + string(rune('a'+(i+2)%26))
 	}
 	text := "The quick brown fox jumps over the lazy dog. " +
@@ -113,7 +113,7 @@ func TestConcurrentAccess(t *testing.T) {
 
 	errors := make(chan error, goroutines)
 
-	for i := 0; i < goroutines; i++ {
+	for range goroutines {
 		go func() {
 			defer wg.Done()
 			matches, err := matcher.FindAll(text)
